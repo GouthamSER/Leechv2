@@ -139,5 +139,5 @@ TgClient.bot.add_handler(
     )
 )
 
-LOGGER.info("NEO-WZML client(s) & services started.")
+LOGGER.info("Leechv2 client(s) & services started.")
 bot_loop.run_forever()
