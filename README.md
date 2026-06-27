@@ -114,6 +114,36 @@ Stop the stack:
 docker compose down
 ```
 
+#### Build And Run The Docker Image Using Official Docker Commands
+
+- Start Docker daemon (SKIP if already running, mostly you don't need to do this):
+
+```
+sudo dockerd
+```
+
+- Build Docker image:
+
+```
+sudo docker build . -t wzmlx
+```
+
+- Run the image:
+
+```
+sudo docker run -p 80:80 -p 8080:8080 wzmlx
+```
+
+- To stop the running image:
+
+```
+sudo docker ps
+```
+
+```
+sudo docker stop id
+```
+
 ### 🔑 Required Configuration
 
 Create `config.py` from `sample_config.py` and set these first:
