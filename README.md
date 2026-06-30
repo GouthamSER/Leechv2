@@ -98,8 +98,8 @@ NEO-WZML is built for people who move a lot of files through Telegram and cloud 
 ## ⚡ Quick Start
 
 ```bash
-git clone https://github.com/irisXDR/NEO-WZML.git
-cd NEO-WZML
+git clone https://github.com/GouthamSER/Leechv2.git
+cd Leechv2
 
 cp sample_config.py config.py
 # Edit config.py and set the required values listed below.
@@ -125,13 +125,13 @@ sudo dockerd
 - Build Docker image:
 
 ```
-sudo docker build . -t wzmlx
+sudo docker build . -t lk2
 ```
 
 - Run the image:
 
 ```
-sudo docker run -p 80:80 -p 8080:8080 wzmlx
+sudo docker run -p 80:80 -p 8080:8080 lk2
 ```
 
 - To stop the running image:
