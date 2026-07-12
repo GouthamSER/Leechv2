@@ -5,9 +5,9 @@
 class NeoStyle:
 
     ST_BN1_NAME = "GitHub"
-    ST_BN1_URL = "https://github.com/irisXDR/NEO-WZML"
+    ST_BN1_URL = "https://github.com/GouthamSER/Leechv2"
     ST_BN2_NAME = "Channel"
-    ST_BN2_URL = "https://t.me/Chiheisen"
+    ST_BN2_URL = "https://t.me/kuttuleech"
 
     ST_MSG = """<i>This bot can mirror all your links|files|torrents to Google Drive or any rclone cloud or to telegram or to ddl servers.</i>
 <b>Type {help_command} to get a list of available commands</b>"""
