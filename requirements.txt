@@ -28,7 +28,7 @@ pillow
 psutil
 pycountry
 pymongo
-pyroblack
+pyrofork==2.2.11
 python-magic
 pytz
 qbittorrent-api
@@ -37,7 +37,7 @@ speedtest-cli
 telegraph
 tenacity
 pytgcrypto
-pyrofork==2.2.11
+tgcrypto-pyrofork
 urllib3
 uvicorn
 uvloop==0.21.0
