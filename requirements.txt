@@ -1,5 +1,5 @@
 # This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
-
+curl-cffi
 asyncio
 aiofiles
 aiohttp
@@ -28,7 +28,7 @@ pillow
 psutil
 pycountry
 pymongo
-pyroblack
+pyrotgfork
 python-magic
 pytz
 qbittorrent-api
