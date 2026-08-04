@@ -28,7 +28,7 @@ pillow
 psutil
 pycountry
 pymongo
-pyrotgfork
+wzgram[fast]
 python-magic
 pytz
 qbittorrent-api
