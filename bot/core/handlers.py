@@ -12,7 +12,7 @@ from bot.modules import *
 from bot.core.tg_client import TgClient
 
 
-def add_handlers():
+async def add_handlers():
     TgClient.bot.add_handler(
         MessageHandler(
             authorize,
@@ -439,4 +439,4 @@ def add_handlers():
                     BotCommand(f"{cmd.lower()}{Config.CMD_SUFFIX}", description)
                 )
 
-        TgClient.bot.set_bot_commands(telegram_commands)
+        await TgClient.bot.set_bot_commands(telegram_commands)
