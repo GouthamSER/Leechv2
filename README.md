@@ -1,38 +1,38 @@
 <!-- markdownlint-disable MD012 MD013 MD033 MD036 MD040 MD041 MD060 -->
 
 <div align="center">
-  <a href="https://github.com/irisXDR/NEO-WZML">
-    <img src="https://iili.io/FLRJNMG.th.png" alt="NEO-WZML Logo" width="140" />
+  <a href="https://github.com/GouthamSER/Leechv2">
+    <img src="https://i.ibb.co/Fq3HDXJN/logo.jpg" alt="LeechV2 Logo" width="140" />
   </a>
 
-# NEO-WZML
+# LeechV2
 
 **A multi-functional Telegram bot to download from anywhere — torrents, Mega, TeraBox, YouTube, Google Drive, rclone, etc — and upload to Telegram, Cloud Drives, TeraBox, DDLs, or any rclone remote. Built-in FFmpeg processing, archive handling, torrent search, RSS monitoring, and web UI for file selection. Based on WZML-X**
 
-[![Version](https://img.shields.io/badge/Version-1.1.1-2ea043)](https://github.com/irisXDR/NEO-WZML)
+[![Version](https://img.shields.io/badge/Version-1.1.1-2ea043)](https://github.com/GouthamSER/Leechv2)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Docker image](https://img.shields.io/docker/image-size/irisxdr/neo-wzml/latest?logo=docker&label=Docker%20Image&labelColor=161b22&color=2496ed)](https://hub.docker.com/r/irisxdr/neo-wzml)
+[![Docker image](https://img.shields.io/docker/image-size/gouthamser/leechv2/latest?logo=docker&label=Docker%20Image&labelColor=161b22&color=2496ed)](https://hub.docker.com/r/gouthamser/leechv2)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-2ea043.svg)](LICENSE)
 [![Telegram](https://img.shields.io/badge/Telegram-Channel-2ea043?logo=telegram&labelColor=161b22)](https://t.me/Chiheisen)
 
-[Channel](https://t.me/Chiheisen) · [Support Group](https://t.me/ChiheisenUnion) · [Issues](https://github.com/irisXDR/NEO-WZML/issues) · [Docker Hub](https://hub.docker.com/r/irisxdr/neo-wzml)
+[Channel](https://t.me/Chiheisen) · [Support Group](https://t.me/ChiheisenUnion) · [Issues](https://github.com/GouthamSER/Leechv2/issues) · [Docker Hub](https://hub.docker.com/r/gouthamser/leechv2)
 
 </div>
 
-> 🚧 **Status:** NEO-WZML is active and evolving. Public releases are expected to be usable, but if you hit a bug, please open an issue with logs and the command you ran.
+> 🚧 **Status:** LeechV2 is active and evolving. Public releases are expected to be usable, but if you hit a bug, please open an issue with logs and the command you ran.
 
 ---
 
 ## 📚 Table of Contents
 
-- [✨ Why NEO-WZML](#-why-neo-wzml)
+- [✨ Why LeechV2](#-why-leechv2)
 - [🚀 Highlights](#-highlights)
 - [⚡ Quick Start](#-quick-start)
 - [💬 Commands](#-commands)
 - [🧭 Deployment Notes](#-deployment-notes)
-- [🆚 What NEO-WZML Adds](#-what-neo-wzml-adds)
+- [🆚 What LeechV2 Adds](#-what-leechv2-adds)
 - [🔍 Troubleshooting](#-troubleshooting)
 - [🤝 Support](#-support)
 - [💰 Sponsors and Donations](#-sponsors-and-donations)
@@ -41,9 +41,9 @@
 
 ---
 
-## ✨ Why NEO-WZML
+## ✨ Why LeechV2
 
-NEO-WZML is built for people who move a lot of files through Telegram and cloud storage. It combines the classic mirror/leech workflow with modern file selection, persistent user settings, strong queue controls, and practical media tools.
+LeechV2 is built for people who move a lot of files through Telegram and cloud storage. It combines the classic mirror/leech workflow with modern file selection, persistent user settings, strong queue controls, and practical media tools.
 
 - 🔌 **One bot, many sources:** direct links, torrents, Mega, TeraBox, Google Drive, JDownloader, yt-dlp, Telegram messages, and rclone remotes.
 - 🎯 **Multiple upload targets:** Telegram leech, Google Drive, TeraBox, rclone remotes, GoFile, BuzzHeavier, and PixelDrain.
@@ -98,8 +98,8 @@ NEO-WZML is built for people who move a lot of files through Telegram and cloud 
 ## ⚡ Quick Start
 
 ```bash
-git clone https://github.com/irisXDR/NEO-WZML.git
-cd NEO-WZML
+git clone https://github.com/GouthamSER/Leechv2.git
+cd Leechv2
 
 cp sample_config.py config.py
 # Edit config.py and set the required values listed below.
@@ -198,11 +198,11 @@ Examples:
 
 ---
 
-## 🆚 What NEO-WZML Adds
+## 🆚 What LeechV2 Adds
 
-NEO-WZML is based on WZML-X and focuses on deployment reliability, modern selection flows, and practical operator controls.
+LeechV2 is based on WZML-X and focuses on deployment reliability, modern selection flows, and practical operator controls.
 
-| Area | NEO-WZML |
+| Area | LeechV2 |
 |------|----------|
 | TeraBox | Native TeraBoxSDK integration — download, upload, account browsing, web file selector |
 | Mega | Native MegaSDK 8.1.1 and web folder selection |
@@ -250,7 +250,7 @@ Removed from this fork: NZB/SABnzbd, YouTube upload, IMDB, and broadcast modules
 
 - 📢 Telegram channel: [Chiheisen](https://t.me/Chiheisen)
 - 💬 Support group: [ChiheisenUnion](https://t.me/ChiheisenUnion)
-- 🐞 Bugs and feature requests: [GitHub Issues](https://github.com/irisXDR/NEO-WZML/issues)
+- 🐞 Bugs and feature requests: [GitHub Issues](https://github.com/GouthamSER/Leechv2/issues)
 
 If you report a bug, include:
 
@@ -263,7 +263,7 @@ If you report a bug, include:
 
 ## 💰 Sponsors and Donations
 
-If NEO-WZML saves you time, consider supporting development:
+If LeechV2 saves you time, consider supporting development:
 
 [🧸 Support the project — アイリス](https://telegram.me/irisXDR)
 
@@ -277,6 +277,7 @@ If NEO-WZML saves you time, consider supporting development:
 | WZML-X developers | [SilentDemonSD](https://github.com/SilentDemonSD), [rjriajul](https://github.com/rjriajul), [CodeWithWeeb](https://github.com/weebzone), [Maverick](https://github.com/MajnuRangeela) |
 | Original project | [anasty17](https://github.com/anasty17) |
 | PyroBlack developers | [eyMarv](https://github.com/eyMarv), [Delivrance](https://github.com/delivrance) |
+| Reedit | [GouthamSER](https://github.com/GouthamSER) |
 
 > Some AI Tools have been used to create certain portions of this repository.
 ---
@@ -287,5 +288,6 @@ If NEO-WZML saves you time, consider supporting development:
 
 <div align="center">
   <em>Made with ❤️ by <a href="https://telegram.me/irisXDR">irisXDR</a></em><br/>
-  <em>Based on <a href="https://github.com/SilentDemonSD/WZML-X">WZML-X</a> · Powered by <a href="https://telegram.me/Chiheisen">Chiheisen</a></em>
+  <em>Based on <a href="https://github.com/SilentDemonSD/WZML-X">WZML-X</a> · Powered by <a href="https://telegram.me/Chiheisen">Chiheisen</a></em><br/>
+  <em>Reedit By <a href="https://github.com/GouthamSER">GouthamSER</a></em>
 </div>
