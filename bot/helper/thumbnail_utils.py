@@ -15,12 +15,14 @@ from aiohttp import ClientSession
 from lxml.etree import HTML
 
 from bot import LOGGER
+from bot.core.config_manager import Config
 from bot.helper.ext_utils.bot_utils import sync_to_async
 
 
 class ThumbnailFetcher:
 
     TMDB_BASE_URL = "https://www.themoviedb.org"
+    TMDB_API_BASE = "https://api.themoviedb.org/3"
     TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/original"
     VIDEO_EXTENSIONS = {
         '.mkv', '.mp4', '.avi', '.mov', '.wmv', '.flv',
@@ -61,6 +63,55 @@ class ThumbnailFetcher:
             'is_tv': is_tv,
             'season': season,
         }
+
+    @staticmethod
+    async def search_tmdb_api(query: str, year: str = None, is_tv: bool = False, season: int = None) -> str or None:
+        """Fetch poster via official TMDB API (requires Config.TMDB_API_KEY)."""
+        api_key = Config.TMDB_API_KEY
+        if not api_key:
+            return None
+        try:
+            search_types = ['tv', 'movie'] if is_tv else ['movie', 'tv']
+            async with ClientSession() as session:
+                for search_type in search_types:
+                    params = {'api_key': api_key, 'query': query}
+                    if year:
+                        params['year' if search_type == 'movie' else 'first_air_date_year'] = year
+
+                    url = f"{ThumbnailFetcher.TMDB_API_BASE}/search/{search_type}"
+                    async with session.get(url, params=params, timeout=10) as resp:
+                        if resp.status != 200:
+                            LOGGER.debug(f"TMDB API search returned {resp.status}")
+                            continue
+                        data = await resp.json()
+
+                    results = data.get('results') or []
+                    if not results:
+                        continue
+
+                    item = results[0]
+                    tmdb_id = item.get('id')
+
+                    if search_type == 'tv' and season and tmdb_id:
+                        season_url = f"{ThumbnailFetcher.TMDB_API_BASE}/tv/{tmdb_id}/season/{season}"
+                        async with session.get(season_url, params={'api_key': api_key}, timeout=10) as s_resp:
+                            if s_resp.status == 200:
+                                s_data = await s_resp.json()
+                                poster = s_data.get('poster_path')
+                                if poster:
+                                    return f"{ThumbnailFetcher.TMDB_IMAGE_BASE}{poster}"
+
+                    backdrop = item.get('backdrop_path')
+                    poster = item.get('poster_path')
+                    chosen = backdrop or poster
+                    if chosen:
+                        LOGGER.info(f"TMDB API poster found for '{query}' via {search_type}")
+                        return f"{ThumbnailFetcher.TMDB_IMAGE_BASE}{chosen}"
+
+            return None
+        except Exception as e:
+            LOGGER.error(f"TMDB API search error: {e}")
+            return None
 
     @staticmethod
     async def search_tmdb(query: str, year: str = None, is_tv: bool = False, season: int = None) -> str or None:
@@ -265,7 +316,9 @@ class ThumbnailFetcher:
 
         LOGGER.info(f"Auto-thumbnail: Searching for '{query}' (TV: {is_tv}, Season: {season}, Year: {parsed.get('year')})")
 
-        poster_url = await cls.search_tmdb(query, parsed.get('year'), is_tv=is_tv, season=season)
+        poster_url = await cls.search_tmdb_api(query, parsed.get('year'), is_tv=is_tv, season=season)
+        if not poster_url:
+            poster_url = await cls.search_tmdb(query, parsed.get('year'), is_tv=is_tv, season=season)
 
         if poster_url:
             thumbnail_path = await cls.download_poster(poster_url, user_id)
