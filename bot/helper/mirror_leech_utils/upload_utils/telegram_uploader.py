@@ -80,7 +80,7 @@ class TelegramUploader:
         self._error = ""
         self._auto_thumb_enabled = (
             not self._listener.thumb and
-            self._listener.user_dict.get("AUTO_THUMBNAIL", False)
+            self._listener.user_dict.get("AUTO_THUMBNAIL", Config.AUTO_THUMBNAIL)
         )
         self._auto_thumb_path = None
 
