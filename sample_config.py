@@ -94,6 +94,8 @@ LEECH_FONT = ""
 CAP_FONT = "code"  # code | bold | italic
 LEECH_CAPTION = ""
 THUMBNAIL_LAYOUT = ""  # e.g. "3x4"
+TMDB_API_KEY = ""  # themoviedb.org API key; empty = fallback to web scrape
+AUTO_THUMBNAIL = False  # global default; users can override in /usettings
 SAVE_MSG = False
 SOURCE_LINK = False
 SCREENSHOTS_MODE = False
