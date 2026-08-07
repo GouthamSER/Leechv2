@@ -685,6 +685,19 @@ class TelegramUploader:
                 if is_video and thumb is None:
                     thumb = await get_video_thumbnail(self._up_path, None)
 
+                if self._auto_thumb_enabled and thumb is None:
+                    from bot.helper.thumbnail_utils import ThumbnailFetcher
+
+                    filename = ospath.basename(self._up_path)
+                    LOGGER.info(f"Attempting auto-thumbnail for: {filename}")
+
+                    self._auto_thumb_path = await ThumbnailFetcher.fetch_thumbnail(
+                        filename, self._listener.user_id
+                    )
+                    if self._auto_thumb_path:
+                        thumb = self._auto_thumb_path
+                        LOGGER.info(f"Using auto-fetched thumbnail: {thumb}")
+
                 self._check_cancelled()
                 if thumb == "none":
                     thumb = None
