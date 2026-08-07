@@ -46,6 +46,14 @@ class ThumbnailFetcher:
 
         is_tv = season is not None or episode is not None or bool(episode_name)
 
+        # PTN sometimes fails to split a trailing year into the 'year' field and
+        # leaves it stuck inside 'title' (e.g. "Idhayam Murali 2026"). Strip it out.
+        if not year and title:
+            trailing_year = re.search(r'\b(19\d{2}|20\d{2})\b\s*$', title)
+            if trailing_year:
+                year = int(trailing_year.group(1))
+                title = title[:trailing_year.start()].strip()
+
         # Fallback: if PTN couldn't extract a meaningful title, do basic cleaning
         if not title or len(title) < 2:
             name = base_name
