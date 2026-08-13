@@ -304,6 +304,33 @@ class ThumbnailFetcher:
             LOGGER.error(f"Poster download error: {e}")
             return None
 
+    @staticmethod
+    async def search_imdb(query: str, year: str = None) -> str or None:
+        """Fallback poster search via imdbinfo (sync lib, wrapped async)."""
+        def _search():
+            import imdbinfo
+            result = imdbinfo.search_title(query)
+            if not result or not result.titles:
+                return None
+
+            candidates = result.titles
+            if year:
+                yr = int(year)
+                exact = [t for t in candidates if t.year == yr]
+                if exact:
+                    candidates = exact
+
+            for t in candidates:
+                if t.cover_url:
+                    return t.cover_url
+            return None
+
+        try:
+            return await sync_to_async(_search)
+        except Exception as e:
+            LOGGER.error(f"IMDb search error: {e}")
+            return None
+
     @classmethod
     async def fetch_thumbnail(cls, filename: str, user_id: int) -> str or None:
         if not cls.is_video_file(filename):
@@ -327,6 +354,8 @@ class ThumbnailFetcher:
         poster_url = await cls.search_tmdb_api(query, parsed.get('year'), is_tv=is_tv, season=season)
         if not poster_url:
             poster_url = await cls.search_tmdb(query, parsed.get('year'), is_tv=is_tv, season=season)
+        if not poster_url:
+            poster_url = await cls.search_imdb(query, parsed.get('year'))
 
         if poster_url:
             thumbnail_path = await cls.download_poster(poster_url, user_id)
