@@ -46,6 +46,19 @@ class ThumbnailFetcher:
 
         is_tv = season is not None or episode is not None or bool(episode_name)
 
+        # PTN sometimes leaves release-quality junk tags stuck inside 'title'
+        # (e.g. "Achyuta Avataaram 2026 HQ"). Strip common ones out first, so
+        # the year (which may come before the junk tag) can then be isolated.
+        if title:
+            junk_tags = (
+                r'\b(HQ|HDR|HDRip|ORG|Original|Untouched|PreDVD|PRE|DVDScr|'
+                r'HDCAM|CAM|TS|TC|Line|DUAL|MULTI|ESub|ESubs|Sub|Subbed)\b'
+            )
+            cleaned = re.sub(junk_tags, '', title, flags=re.IGNORECASE)
+            cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+            if cleaned:
+                title = cleaned
+
         # PTN sometimes fails to split a trailing year into the 'year' field and
         # leaves it stuck inside 'title' (e.g. "Idhayam Murali 2026"). Strip it out.
         if not year and title:
@@ -351,11 +364,11 @@ class ThumbnailFetcher:
 
         LOGGER.info(f"Auto-thumbnail: Searching for '{query}' (TV: {is_tv}, Season: {season}, Year: {parsed.get('year')})")
 
-        poster_url = await cls.search_tmdb_api(query, parsed.get('year'), is_tv=is_tv, season=season)
+        poster_url = await cls.search_imdb(query, parsed.get('year'))
+        if not poster_url:
+            poster_url = await cls.search_tmdb_api(query, parsed.get('year'), is_tv=is_tv, season=season)
         if not poster_url:
             poster_url = await cls.search_tmdb(query, parsed.get('year'), is_tv=is_tv, season=season)
-        if not poster_url:
-            poster_url = await cls.search_imdb(query, parsed.get('year'))
 
         if poster_url:
             thumbnail_path = await cls.download_poster(poster_url, user_id)
