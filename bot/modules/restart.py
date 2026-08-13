@@ -180,7 +180,7 @@ async def confirm_restart(_, query):
     await query.answer()
     data = query.data.split()
     message = query.message
-    reply_to = message.reply_to_message
+    reply_to = message.reply_to_message or message.chat.id
     await delete_message(message)
     if data[1] == "confirm":
         intervals["stopAll"] = True
@@ -224,11 +224,16 @@ async def confirm_restart(_, query):
                 "(restart proceeds even if self-update failed).",
                 rc2,
             )
-        if restart_message is not None:
+        if restart_message is not None and hasattr(restart_message, "chat"):
             async with aiopen(".restartmsg", "w") as f:
                 await f.write(
                     f"{restart_message.chat.id}\n{restart_message.id}\n"
                 )
+        else:
+            LOGGER.warning(
+                "Skipping .restartmsg write: no valid reply_to chat for restart confirmation "
+                "(reply_to_message missing)."
+            )
         osexecl(executable, executable, "-m", "bot")
     else:
         await delete_message(message, reply_to)
