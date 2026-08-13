@@ -36,6 +36,9 @@ from bot.helper.ext_utils.status_utils import get_readable_message
 
 
 async def send_message(message, text, buttons=None, block=True, photo=None, _recursion_depth=0, **kwargs):
+    if message is None:
+        LOGGER.error("send_message: 'message' is None, cannot send/reply. Skipping.")
+        return None
     try:
         if photo:
             try:
