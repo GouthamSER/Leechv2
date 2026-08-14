@@ -2,7 +2,7 @@
 curl-cffi
 asyncio
 aiofiles
-aiohttp
+aiohttp[speedups]
 aioshutil
 anytree
 apscheduler
@@ -28,7 +28,7 @@ pillow
 psutil
 pycountry
 pymongo
-wzgram[fast]
+pyrotgfork
 python-magic
 pytz
 qbittorrent-api
