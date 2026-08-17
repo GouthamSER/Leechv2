@@ -3,6 +3,7 @@
 import re
 import os
 import warnings
+import difflib
 from os import path as ospath
 
 # PTN v2.8.2 has invalid regex escape sequences in its internal files (extras.py,
@@ -86,6 +87,33 @@ class ThumbnailFetcher:
         }
 
     @staticmethod
+    def _normalize_title(title: str) -> str:
+        if not title:
+            return ''
+        t = title.lower()
+        t = re.sub(r'[^a-z0-9]+', ' ', t)
+        return re.sub(r'\s+', ' ', t).strip()
+
+    @classmethod
+    def _titles_match(cls, query_name: str, candidate_title: str, threshold: float = 0.72) -> bool:
+        """Guards against picking a wrong movie/show that merely ranked first
+        in a fuzzy search. Requires the candidate title to actually resemble
+        the parsed filename title, not just share the search slot."""
+        a = cls._normalize_title(query_name)
+        b = cls._normalize_title(candidate_title)
+        if not a or not b:
+            return False
+        if a == b:
+            return True
+        ratio = difflib.SequenceMatcher(None, a, b).ratio()
+        # also allow a clean containment match (e.g. "forest guard" in
+        # "forest guard 2" would NOT match since a != b and ratio check below
+        # still applies, but "the forest guard" containing "forest guard" is fine)
+        if a in b or b in a:
+            ratio = max(ratio, 0.8)
+        return ratio >= threshold
+
+    @staticmethod
     async def search_tmdb_api(query: str, year: str = None, is_tv: bool = False, season: int = None) -> str or None:
         """Fetch poster via official TMDB API (requires Config.TMDB_API_KEY)."""
         api_key = Config.TMDB_API_KEY
@@ -110,7 +138,31 @@ class ThumbnailFetcher:
                     if not results:
                         continue
 
-                    item = results[0]
+                    # Old code always grabbed results[0]. TMDB's own ranking
+                    # can put a same-named remake/short/unrelated title
+                    # first, especially once the year filter above finds
+                    # nothing and we fall through to an unfiltered search.
+                    # Pick the first candidate whose title actually matches,
+                    # preferring one whose release year lines up.
+                    item = None
+                    yr_int = int(year) if year else None
+                    best_year_match = None
+                    for cand in results[:5]:
+                        cand_title = cand.get('title') or cand.get('name') or ''
+                        if not ThumbnailFetcher._titles_match(query, cand_title):
+                            continue
+                        cand_date = cand.get('release_date') or cand.get('first_air_date') or ''
+                        cand_year = int(cand_date[:4]) if cand_date[:4].isdigit() else None
+                        if yr_int and cand_year == yr_int:
+                            item = cand
+                            break
+                        if best_year_match is None:
+                            best_year_match = cand
+                    if item is None:
+                        item = best_year_match
+                    if item is None:
+                        LOGGER.debug(f"TMDB API: no title-matching result for '{query}' via {search_type}")
+                        continue
                     tmdb_id = item.get('id')
 
                     if search_type == 'tv' and season and tmdb_id:
@@ -208,11 +260,38 @@ class ThumbnailFetcher:
                                                 LOGGER.info(f"TMDB season {season} poster URL: {full_url}")
                                                 return full_url
 
-                        posters = html.xpath('//div[contains(@class, "poster")]//img/@src')
+                        poster_nodes = html.xpath('//div[contains(@class, "poster")]//img')
+                        if not poster_nodes:
+                            poster_nodes = html.xpath('//a[@data-id]/img')
+                        if not poster_nodes:
+                            poster_nodes = html.xpath('//img[contains(@src, "/t/p/")]')
+
+                        # The scraper used to grab posters[0] unconditionally.
+                        # TMDB's search page ranking isn't always the right
+                        # movie, especially on the "retry without year" pass,
+                        # so verify against the poster's own alt/title text
+                        # before accepting it. When TMDB's server-side year
+                        # filter (try_year) was applied we trust it a bit
+                        # more since that already narrowed candidates.
+                        posters = []
+                        for node in poster_nodes:
+                            src = node.get('src')
+                            if not src:
+                                continue
+                            alt_text = (node.get('alt') or node.get('title') or '').strip()
+                            if alt_text:
+                                if ThumbnailFetcher._titles_match(search_query, alt_text):
+                                    posters = [src]
+                                    break
+                                continue
+                            if try_year:
+                                posters = [src]
+                                break
                         if not posters:
-                            posters = html.xpath('//a[@data-id]/img/@src')
-                        if not posters:
-                            posters = html.xpath('//img[contains(@src, "/t/p/")]/@src')
+                            LOGGER.debug(
+                                f"TMDB scraper: no title-verified poster for '{search_query}' "
+                                f"(type={search_type}, year={try_year})"
+                            )
 
                         if posters:
                             detail_links = [
@@ -318,7 +397,7 @@ class ThumbnailFetcher:
             return None
 
     @staticmethod
-    async def search_imdb(query: str, year: str = None) -> str or None:
+    async def search_imdb(query: str, year: str = None, is_tv: bool = False) -> str or None:
         """Fallback poster search via imdbinfo (sync lib, wrapped async)."""
         def _search():
             import imdbinfo
@@ -327,11 +406,40 @@ class ThumbnailFetcher:
                 return None
 
             candidates = result.titles
+
+            # Only keep kinds that fit what we're looking for. Without this,
+            # a query for a movie could match a videoGame/short/tvEpisode
+            # with the same name and grab its cover instead.
+            wanted_kinds = {'tvSeries', 'tvMiniSeries'} if is_tv else {'movie', 'tvMovie'}
+            kind_filtered = [t for t in candidates if (t.kind in wanted_kinds) or not t.kind]
+            if kind_filtered:
+                candidates = kind_filtered
+
+            # Never trust the raw fuzzy ranking blindly. Require the
+            # candidate's own title to actually resemble the parsed name.
+            title_ok = [t for t in candidates if ThumbnailFetcher._titles_match(query, t.title)]
+            if title_ok:
+                candidates = title_ok
+            else:
+                LOGGER.debug(f"IMDb: no title-matching candidate for '{query}', skipping IMDb result")
+                return None
+
             if year:
                 yr = int(year)
                 exact = [t for t in candidates if t.year == yr]
                 if exact:
                     candidates = exact
+                else:
+                    # No exact year match among title-verified candidates.
+                    # A near-year match (+-1) covers regional release-date
+                    # drift; anything further off is more likely a remake
+                    # or unrelated title reusing the same name.
+                    near = [t for t in candidates if t.year and abs(t.year - yr) <= 1]
+                    if near:
+                        candidates = near
+                    else:
+                        LOGGER.debug(f"IMDb: title matched but year {yr} not close for '{query}'")
+                        return None
 
             for t in candidates:
                 if t.cover_url:
@@ -357,14 +465,16 @@ class ThumbnailFetcher:
 
         is_tv = parsed.get('is_tv', False)
         season = parsed.get('season')
-        if is_tv:
-            query = parsed['name']
-        else:
-            query = f"{parsed['name']} {parsed.get('year') or ''}".strip()
+        # NOTE: query is the bare title only. Year must stay OUT of the search
+        # text and travel as its own param - the old code appended it here
+        # ("Forest Guard 2026") which made every provider search for that
+        # literal string, tanked match quality, and led to random top-ranked
+        # results (wrong movie's poster) being accepted with no title check.
+        query = parsed['name']
 
         LOGGER.info(f"Auto-thumbnail: Searching for '{query}' (TV: {is_tv}, Season: {season}, Year: {parsed.get('year')})")
 
-        poster_url = await cls.search_imdb(query, parsed.get('year'))
+        poster_url = await cls.search_imdb(query, parsed.get('year'), is_tv=is_tv)
         if not poster_url:
             poster_url = await cls.search_tmdb_api(query, parsed.get('year'), is_tv=is_tv, season=season)
         if not poster_url:
