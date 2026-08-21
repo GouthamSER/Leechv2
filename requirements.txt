@@ -28,7 +28,7 @@ pillow
 psutil
 pycountry
 pymongo
-wzgram
+wzgram[fast]
 python-magic
 pytz
 qbittorrent-api
@@ -36,7 +36,7 @@ requests
 speedtest-cli
 telegraph
 tenacity
-tgcrypto-pyrofork
+tgcrypto
 urllib3
 uvicorn
 uvloop==0.21.0
