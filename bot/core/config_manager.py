@@ -127,6 +127,7 @@ class Config:
     TG_PROXY = None
     THUMBNAIL_LAYOUT = ""
     TMDB_API_KEY = ""
+    OMDB_API_KEY = ""
     AUTO_THUMBNAIL = False
     SAVE_MSG = False
     SCREENSHOTS_MODE = False
