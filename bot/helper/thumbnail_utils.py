@@ -1,5 +1,3 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
-
 import re
 import os
 import warnings
@@ -444,6 +442,11 @@ class ThumbnailFetcher:
 
                 poster = data.get('Poster')
                 if poster and poster != 'N/A':
+                    # OMDb serves amazon-hosted posters pre-resized small
+                    # (e.g. "..._V1_SX300.jpg"), which looks noticeably
+                    # blurrier than TMDB's originals. Strip the resize
+                    # suffix so amazon serves the full-resolution image.
+                    poster = re.sub(r'\._V1_.*?(\.\w+)$', r'\1', poster)
                     LOGGER.info(f"OMDb poster found for '{query}'")
                     return poster
                 return None
