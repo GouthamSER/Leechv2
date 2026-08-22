@@ -1,5 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
-#
+
 # Copy to `config.py` and fill in your values. `config.py` is git-ignored.
 # BOT_TOKEN, TELEGRAM_API, TELEGRAM_HASH, OWNER_ID, DATABASE_URL, BASE_URL,
 # UPSTREAM_REPO, UPSTREAM_BRANCH, AUTO_UPDATE and UPDATE_PKGS may also be set via env vars.
@@ -94,7 +93,8 @@ LEECH_FONT = ""
 CAP_FONT = "code"  # code | bold | italic
 LEECH_CAPTION = ""
 THUMBNAIL_LAYOUT = ""  # e.g. "3x4"
-TMDB_API_KEY = ""  # themoviedb.org API key; empty = fallback to web scrape
+TMDB_API_KEY = ""  # themoviedb.org API key; checked first
+OMDB_API_KEY = ""  # omdbapi.com API key; checked if TMDB API has no key/result, before web-scrape fallback
 AUTO_THUMBNAIL = False  # global default; users can override in /usettings
 SAVE_MSG = False
 SOURCE_LINK = False
@@ -194,8 +194,8 @@ SEARCH_PLUGINS = [
 ]
 
 # Self-update
-UPSTREAM_REPO = "https://github.com/irisXDR/NEO-WZML"
+UPSTREAM_REPO = "https://github.com/GouthamSER/Leechv2"
 UPSTREAM_BRANCH = "master"
-AUTO_UPDATE = False
+AUTO_UPDATE = True
 UPDATE_PKGS = True
-UPGRADE_PACKAGES = False
+UPGRADE_PACKAGES = True
