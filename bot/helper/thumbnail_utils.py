@@ -397,59 +397,59 @@ class ThumbnailFetcher:
             return None
 
     @staticmethod
-    async def search_imdb(query: str, year: str = None, is_tv: bool = False) -> str or None:
-        """Fallback poster search via imdbinfo (sync lib, wrapped async)."""
-        def _search():
-            import imdbinfo
-            result = imdbinfo.search_title(query)
-            if not result or not result.titles:
-                return None
+    async def search_omdb(query: str, year: str = None, is_tv: bool = False) -> str or None:
+        """Fallback poster search via OMDb API (requires Config.OMDB_API_KEY)."""
+        api_key = Config.OMDB_API_KEY
+        if not api_key:
+            return None
+        try:
+            omdb_type = 'series' if is_tv else 'movie'
+            async with ClientSession() as session:
 
-            candidates = result.titles
+                async def _lookup(with_year: bool):
+                    params = {'apikey': api_key, 't': query, 'type': omdb_type}
+                    if with_year and year:
+                        params['y'] = year
+                    async with session.get(
+                        "https://www.omdbapi.com/", params=params, timeout=10
+                    ) as resp:
+                        if resp.status != 200:
+                            LOGGER.debug(f"OMDb API returned {resp.status}")
+                            return None
+                        return await resp.json()
 
-            # Only keep kinds that fit what we're looking for. Without this,
-            # a query for a movie could match a videoGame/short/tvEpisode
-            # with the same name and grab its cover instead.
-            wanted_kinds = {'tvSeries', 'tvMiniSeries'} if is_tv else {'movie', 'tvMovie'}
-            kind_filtered = [t for t in candidates if (t.kind in wanted_kinds) or not t.kind]
-            if kind_filtered:
-                candidates = kind_filtered
+                data = await _lookup(with_year=True)
+                if not data or data.get('Response') != 'True':
+                    # OMDb's exact-title-match endpoint is strict about the
+                    # year; if a year gave nothing, retry without it, but
+                    # still verify the title below before trusting it.
+                    data = await _lookup(with_year=False)
 
-            # Never trust the raw fuzzy ranking blindly. Require the
-            # candidate's own title to actually resemble the parsed name.
-            title_ok = [t for t in candidates if ThumbnailFetcher._titles_match(query, t.title)]
-            if title_ok:
-                candidates = title_ok
-            else:
-                LOGGER.debug(f"IMDb: no title-matching candidate for '{query}', skipping IMDb result")
-                return None
+                if not data or data.get('Response') != 'True':
+                    LOGGER.debug(f"OMDb: no result for '{query}'")
+                    return None
 
-            if year:
-                yr = int(year)
-                exact = [t for t in candidates if t.year == yr]
-                if exact:
-                    candidates = exact
-                else:
-                    # No exact year match among title-verified candidates.
-                    # A near-year match (+-1) covers regional release-date
-                    # drift; anything further off is more likely a remake
-                    # or unrelated title reusing the same name.
-                    near = [t for t in candidates if t.year and abs(t.year - yr) <= 1]
-                    if near:
-                        candidates = near
-                    else:
-                        LOGGER.debug(f"IMDb: title matched but year {yr} not close for '{query}'")
+                cand_title = data.get('Title') or ''
+                if not ThumbnailFetcher._titles_match(query, cand_title):
+                    LOGGER.debug(f"OMDb: title mismatch for '{query}' -> got '{cand_title}'")
+                    return None
+
+                if year:
+                    cand_year_raw = (data.get('Year') or '').split('\u2013')[0].split('-')[0].strip()
+                    if cand_year_raw.isdigit() and abs(int(cand_year_raw) - int(year)) > 1:
+                        LOGGER.debug(
+                            f"OMDb: title matched but year {year} not close to {cand_year_raw} for '{query}'"
+                        )
                         return None
 
-            for t in candidates:
-                if t.cover_url:
-                    return t.cover_url
-            return None
+                poster = data.get('Poster')
+                if poster and poster != 'N/A':
+                    LOGGER.info(f"OMDb poster found for '{query}'")
+                    return poster
+                return None
 
-        try:
-            return await sync_to_async(_search)
         except Exception as e:
-            LOGGER.error(f"IMDb search error: {e}")
+            LOGGER.error(f"OMDb search error: {e}")
             return None
 
     @classmethod
@@ -474,9 +474,9 @@ class ThumbnailFetcher:
 
         LOGGER.info(f"Auto-thumbnail: Searching for '{query}' (TV: {is_tv}, Season: {season}, Year: {parsed.get('year')})")
 
-        poster_url = await cls.search_imdb(query, parsed.get('year'), is_tv=is_tv)
+        poster_url = await cls.search_tmdb_api(query, parsed.get('year'), is_tv=is_tv, season=season)
         if not poster_url:
-            poster_url = await cls.search_tmdb_api(query, parsed.get('year'), is_tv=is_tv, season=season)
+            poster_url = await cls.search_omdb(query, parsed.get('year'), is_tv=is_tv)
         if not poster_url:
             poster_url = await cls.search_tmdb(query, parsed.get('year'), is_tv=is_tv, season=season)
 
