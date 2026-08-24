@@ -1,4 +1,5 @@
-
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
+#
 # Copy to `config.py` and fill in your values. `config.py` is git-ignored.
 # BOT_TOKEN, TELEGRAM_API, TELEGRAM_HASH, OWNER_ID, DATABASE_URL, BASE_URL,
 # UPSTREAM_REPO, UPSTREAM_BRANCH, AUTO_UPDATE and UPDATE_PKGS may also be set via env vars.
@@ -129,7 +130,7 @@ JD_MODE = False
 
 # Google Drive
 GDRIVE_ID = ""
-GD_DESP = "Uploaded with NEO-WZML"
+GD_DESP = "Uploaded with Leechv2"
 IS_TEAM_DRIVE = False
 USER_TD_MODE = False
 USER_TD_SA = ""
@@ -196,6 +197,6 @@ SEARCH_PLUGINS = [
 # Self-update
 UPSTREAM_REPO = "https://github.com/GouthamSER/Leechv2"
 UPSTREAM_BRANCH = "master"
-AUTO_UPDATE = True
+AUTO_UPDATE = False
 UPDATE_PKGS = True
-UPGRADE_PACKAGES = True
+UPGRADE_PACKAGES = False

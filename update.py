@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
 
 from sys import exit
 from importlib import import_module
@@ -109,7 +109,7 @@ if DATABASE_URL := config_file.get("DATABASE_URL", "").strip():
 AUTO_UPDATE = _is_truthy(config_file.get("AUTO_UPDATE", False))
 
 UPSTREAM_REPO = (config_file.get("UPSTREAM_REPO") or "").strip() if AUTO_UPDATE else ""
-UPSTREAM_BRANCH = (config_file.get("UPSTREAM_BRANCH") or "").strip() or "wzv3"
+UPSTREAM_BRANCH = (config_file.get("UPSTREAM_BRANCH") or "").strip() or "master"
 
 if UPSTREAM_REPO:
     if path.exists(".git"):
@@ -118,8 +118,8 @@ if UPSTREAM_REPO:
     update = srun(
         [
             f"git init -q \
-                     && git config --global user.email 89005882+irisXDR@users.noreply.github.com \
-                     && git config --global user.name アイリス \
+                     && git config --global user.email GouthamSER@users.noreply.github.com \
+                     && git config --global user.name GouthamSER \
                      && git add . \
                      && git commit -sm update -q \
                      && git remote add origin {UPSTREAM_REPO} \

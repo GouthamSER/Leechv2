@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
 
 from pyrogram import Client, enums
 from asyncio import Lock, gather
@@ -42,7 +42,7 @@ class TgClient:
     async def start_hclient(cls, no, b_token):
         try:
             hbot = await cls.neoTgClient(
-                f"NEO-WZML-HBot{no}",
+                f"Leechv2-HBot{no}",
                 bot_token=b_token,
                 no_updates=True,
             ).start()
@@ -70,14 +70,14 @@ class TgClient:
         LOGGER.info("Generating client from BOT_TOKEN")
         cls.ID = Config.BOT_TOKEN.split(":", 1)[0]
         cls.bot = cls.neoTgClient(
-            f"NEO-WZML-Bot{cls.ID}",
+            f"Leechv2-Bot{cls.ID}",
             bot_token=Config.BOT_TOKEN,
             workdir="/usr/src/app",
         )
         await cls.bot.start()
         cls.BNAME = cls.bot.me.username
         cls.ID = Config.BOT_TOKEN.split(":", 1)[0]
-        LOGGER.info(f"NEO-WZML Bot : [@{cls.BNAME}] Started!")
+        LOGGER.info(f"Leechv2 Bot : [@{cls.BNAME}] Started!")
 
     @classmethod
     async def start_user(cls):
@@ -106,7 +106,7 @@ class TgClient:
                         return
 
                 cls.user = cls.neoTgClient(
-                    "NEO-WZML-User",
+                    "Leechv2-User",
                     session_string=session_string,
                     sleep_threshold=60,
                     no_updates=True,
@@ -116,7 +116,7 @@ class TgClient:
                 if cls.IS_PREMIUM_USER:
                     cls.MAX_SPLIT_SIZE = 4194304000
                 uname = cls.user.me.username or cls.user.me.first_name
-                LOGGER.info(f"NEO-WZML User : [{uname}] Started!")
+                LOGGER.info(f"Leechv2 User : [{uname}] Started!")
             except Exception as e:
                 LOGGER.error(f"Failed to start client from USER_SESSION_STRING. {e}")
                 cls.IS_PREMIUM_USER = False

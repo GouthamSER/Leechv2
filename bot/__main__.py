@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
 
 from .core.config_manager import Config
 
@@ -139,5 +139,5 @@ TgClient.bot.add_handler(
     )
 )
 
-LOGGER.info("NEO-WZML client(s) & services started.")
+LOGGER.info("Leechv2 client(s) & services started.")
 bot_loop.run_forever()

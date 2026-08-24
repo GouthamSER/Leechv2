@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
 
 import os
 import random
@@ -342,7 +342,7 @@ async def add_mega_download(listener, path):
         mega_main = os.path.join(mega_base, "main")
         await makedirs(mega_main, exist_ok=True)
         app_key = ""
-        ua = "NEO-WZML"
+        ua = "Leechv2"
         workers = 4
 
         async_api = AsyncMega()

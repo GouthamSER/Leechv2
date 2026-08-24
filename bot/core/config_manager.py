@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
 
 from importlib import import_module
 from os import getenv
@@ -42,9 +42,9 @@ class Config:
     PROTECTED_API = ""
     BUZZHEAVIER_API = ""
     GDRIVE_ID = ""
-    GD_DESP = "Uploaded with NEO-WZML"
-    AUTHOR_NAME = "irisXDR"
-    AUTHOR_URL = "https://github.com/irisXDR"
+    GD_DESP = "Uploaded with Leechv2"
+    AUTHOR_NAME = "GouthamSER"
+    AUTHOR_URL = "https://github.com/GouthamSER"
     INSTADL_API = ""
     INCOMPLETE_TASK_NOTIFIER = False
     INDEX_URL = ""

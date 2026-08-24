@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
 
 mirror = """<b>✦ MIRROR COMMAND</b>
 
@@ -781,7 +781,7 @@ def get_bot_commands():
     commands["Stats"] = "Bot, OS, Repo & System full Statistics"
     commands["Rss"] = "User RSS Management Settings"
     commands["CancelAll"] = "Cancel all Tasks on the Bot"
-    commands["Help"] = "Detailed help usage of NEO-WZML"
+    commands["Help"] = "Detailed help usage of Leechv2"
     commands["BotSet"] = "[SUDO] Bot Management Settings"
     commands["Log"] = "[SUDO] Get Bot Logs for Internal Working"
     commands["Restart"] = "[SUDO] Reboot bot"
@@ -1154,7 +1154,7 @@ config_descriptions = {
     "MEGA_EMAIL": "Mega.nz premium account email for higher limits",
     "MEGA_PASSWORD": "Mega.nz premium account password",
     "TERABOX_ENABLED": "Enable Terabox downloads (teraboxSDK). Auth via a terabox.txt cookie export (Private Files).",
-    "TERABOX_UPLOAD_PATH": "Default folder in the TeraBox account for `-up tbx` uploads (e.g. /NEO-WZML). Empty = account root.",
+    "TERABOX_UPLOAD_PATH": "Default folder in the TeraBox account for `-up tbx` uploads (e.g. /Leechv2). Empty = account root.",
 
     "DEBRID_LINK_API": "Debrid-Link.com API key for 172+ premium host support",
     "REAL_DEBRID_API": "Real-Debrid.com API key for torrent cache and premium hosts",
