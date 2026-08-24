@@ -36,7 +36,7 @@ requests
 speedtest-cli
 telegraph
 tenacity
-tgcrypto
+tgcrypto-pyrofork
 urllib3
 uvicorn
 uvloop==0.21.0
