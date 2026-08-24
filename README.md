@@ -106,6 +106,13 @@ cp sample_config.py config.py
 
 docker compose up -d --build
 docker compose logs -f
+
+or
+
+git clone https://github.com/GouthamSER/Leechv2.git l2
+cd l2
+docker build -t l2 .
+docker run -p 8080:8080 l2
 ```
 
 Stop the stack:
