@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
 
 from ast import literal_eval
 from asyncio import sleep
@@ -807,7 +807,7 @@ async def get_user_settings(from_user, stype="main"):
         text += f"\n • <b>Dump Mode:</b> <b>{dump_mode_msg}</b>"
         text += "\n\n<blockquote expandable><b>➜ Thumbnail Priority:</b>"
         text += "\n 1️⃣ Custom Thumbnail (highest)"
-        text += "\n 2️⃣ Auto Thumbnail (TMDB)"
+        text += "\n 2️⃣ Auto Thumbnail (OMDb)"
         text += "\n 3️⃣ Thumbnail Layout (grid from frames)"
         text += "\n 4️⃣ Random Video Thumbnail (fallback)"
         text += "\n\n<i>Note: Auto Thumbnail works for videos only.</i></blockquote>"
