@@ -126,7 +126,6 @@ class Config:
     TELEGRAM_HASH = ""
     TG_PROXY = None
     THUMBNAIL_LAYOUT = ""
-    TMDB_API_KEY = ""
     OMDB_API_KEY = ""
     AUTO_THUMBNAIL = False
     SAVE_MSG = False
