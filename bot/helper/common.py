@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
 
 import re
 from asyncio import gather, sleep
@@ -724,6 +724,23 @@ class TaskConfig:
             if self.multi > 2:
                 msgts += f"\n• <b>Cancel Multi:</b> <i>/{BotCommands.CancelTaskCommand[1]}_{self.multi_tag}</i>"
             nextmsg = await send_message(nextmsg, msgts)
+
+        # send_message() returns a plain error string (not a Message) when
+        # the reply target it was given turns out to be invalid/empty - e.g.
+        # the reply_to_message_id+1 guess above can land on a deleted or
+        # non-existent message, whose pyrogram stub has chat=None and blows
+        # up inside message.reply(). Without this check nextmsg.id below
+        # crashes with "'str' object has no attribute 'id'" and the multi
+        # chain silently dies instead of failing cleanly.
+        if isinstance(nextmsg, str):
+            LOGGER.error(f"run_multi: failed to send next task message: {nextmsg}")
+            if self.multi_tag in multi_tags:
+                multi_tags.discard(self.multi_tag)
+            async with task_dict_lock:
+                for fd_name in self.same_dir:
+                    self.same_dir[fd_name]["total"] -= self.multi
+            return
+
         nextmsg = await self.client.get_messages(
             chat_id=self.message.chat.id, message_ids=nextmsg.id
         )
@@ -769,6 +786,11 @@ class TaskConfig:
                 multi_tags.add(self.multi_tag)
                 msg += f"\n• <b>Cancel Multi:</b> <i>/{BotCommands.CancelTaskCommand[1]}_{self.multi_tag}</i>"
             nextmsg = await send_message(self.message, msg)
+            if isinstance(nextmsg, str):
+                LOGGER.error(f"init_bulk: failed to send bulk-start message: {nextmsg}")
+                if self.multi_tag in multi_tags:
+                    multi_tags.discard(self.multi_tag)
+                return
             nextmsg = await self.client.get_messages(
                 chat_id=self.message.chat.id, message_ids=nextmsg.id
             )
