@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
 
 from ast import literal_eval
 from base64 import b64encode
@@ -344,6 +344,9 @@ class Mirror(TaskListener):
             self.options = " ".join(input_list[1:])
             b_msg.append(f"{self.bulk[0]} -i {len(self.bulk)} {self.options}")
             nextmsg = await send_message(self.message, " ".join(b_msg))
+            if isinstance(nextmsg, str):
+                LOGGER.error(f"init_bulk: failed to send bulk-start message: {nextmsg}")
+                return
             nextmsg = await self.client.get_messages(
                 chat_id=self.message.chat.id, message_ids=nextmsg.id
             )
