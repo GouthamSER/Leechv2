@@ -210,10 +210,6 @@ class ThumbnailFetcher:
 
     @classmethod
     async def fetch_thumbnail(cls, filename: str, user_id: int) -> str or None:
-        if not cls.is_video_file(filename):
-            LOGGER.debug(f"Auto-thumbnail: Skipping non-video file: {filename}")
-            return None
-
         parsed = cls.parse_filename(filename)
         if not parsed['name'] or len(parsed['name']) < 3:
             LOGGER.debug(f"Auto-thumbnail: Could not extract valid name from: {filename}")
