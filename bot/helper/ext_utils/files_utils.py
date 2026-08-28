@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leechv2 (github.com/GouthamSER/Leechv2), based on NEO-WZML (github.com/irisXDR/NEO-WZML)
 
 from aioshutil import rmtree as aiormtree, move
 from asyncio import create_subprocess_exec, sleep, wait_for
@@ -446,6 +446,7 @@ class SevenZ:
         cmd = [
             "7z",
             "x",
+            "-mmt=1",
             f"-p{pswd}",
             f_path,
             f"-o{t_path}",
@@ -456,7 +457,7 @@ class SevenZ:
             "-bb3",
         ]
         if not pswd:
-            del cmd[2]
+            del cmd[3]
         if self._listener.is_cancelled:
             return False
         self._listener.subproc = await create_subprocess_exec(
@@ -492,6 +493,7 @@ class SevenZ:
             f"-v{split_size}b",
             "a",
             "-mx=0",
+            "-mmt=1",
             f"-p{pswd}",
             up_path,
             dl_path,
@@ -501,12 +503,12 @@ class SevenZ:
         ]
         if self._listener.is_leech and int(size) > self._listener.split_size:
             if not pswd:
-                del cmd[4]
+                del cmd[5]
             LOGGER.info(f"Zip: orig_path: {dl_path}, zip_path: {up_path}.0*")
         else:
             del cmd[1]
             if not pswd:
-                del cmd[3]
+                del cmd[4]
             LOGGER.info(f"Zip: orig_path: {dl_path}, zip_path: {up_path}")
         if self._listener.is_cancelled:
             return False
