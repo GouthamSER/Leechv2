@@ -148,6 +148,10 @@ class ThumbnailFetcher:
         """Fallback poster search via OMDb API (requires Config.OMDB_API_KEY)."""
         api_key = Config.OMDB_API_KEY
         if not api_key:
+            LOGGER.warning(
+                "Auto-thumbnail: OMDB_API_KEY is not set - skipping poster fetch. "
+                "Set OMDB_API_KEY in config to enable (get one free at omdbapi.com/apikey.aspx)."
+            )
             return None
         try:
             omdb_type = 'series' if is_tv else 'movie'
