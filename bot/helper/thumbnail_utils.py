@@ -127,20 +127,99 @@ class ThumbnailFetcher:
                 }, timeout=15) as resp:
                     if resp.status != 200:
                         return None
+                    # Guard against a pathological/huge response ballooning
+                    # memory on repeated auto-thumbnail runs - posters are
+                    # a few hundred KB normally, 20MB is already generous.
+                    content_length = resp.content_length
+                    if content_length and content_length > 20 * 1024 * 1024:
+                        LOGGER.warning(f"Poster download skipped: response too large ({content_length} bytes)")
+                        return None
                     content = await resp.read()
 
             def save_image():
                 from io import BytesIO
-                img = Image.open(BytesIO(content))
-                if img.mode != 'RGB':
-                    img = img.convert('RGB')
-                img.save(temp_path, 'JPEG', quality=95)
+                # Explicitly close both the original and (if converted) the
+                # new RGB image - PIL doesn't free the decoded frame buffer
+                # until closed, and convert() returns a second object that
+                # leaves the first one dangling if never closed. Left as
+                # garbage for the GC across many auto-thumbnail calls this
+                # adds up on a resource-constrained VPS.
+                with Image.open(BytesIO(content)) as img:
+                    if img.mode != 'RGB':
+                        rgb_img = img.convert('RGB')
+                        try:
+                            rgb_img.save(temp_path, 'JPEG', quality=95)
+                        finally:
+                            rgb_img.close()
+                    else:
+                        img.save(temp_path, 'JPEG', quality=95)
                 return temp_path
 
             return await sync_to_async(save_image)
 
         except Exception as e:
             LOGGER.error(f"Poster download error: {e}")
+            return None
+
+    @classmethod
+    async def search_imdbio(cls, query: str, year: str = None, is_tv: bool = False) -> str or None:
+        """Primary poster search via imdbio (pypi.org/project/imdbio) - no API key required."""
+        def _search():
+            from imdbio import search_title
+            from imdbio.services import TitleType
+            from imdbio.exceptions import ImdbioError
+
+            ttype = TitleType.Series if is_tv else TitleType.Movies
+            try:
+                result = search_title(
+                    query,
+                    year=int(year) if year else None,
+                    title_type=ttype,
+                )
+            except ImdbioError as e:
+                LOGGER.debug(f"imdbio: search failed for '{query}': {e}")
+                return None
+
+            if not result or not result.titles:
+                return None
+
+            candidates = result.titles
+
+            # Same guard used everywhere else here: never trust the raw
+            # ranking blindly, require the candidate's own title to
+            # actually resemble the parsed filename title.
+            title_ok = [t for t in candidates if cls._titles_match(query, t.title)]
+            if title_ok:
+                candidates = title_ok
+            else:
+                LOGGER.debug(f"imdbio: no title-matching candidate for '{query}'")
+                return None
+
+            if year:
+                yr = int(year)
+                exact = [t for t in candidates if t.year == yr]
+                if exact:
+                    candidates = exact
+                else:
+                    # Allow +-1 year drift for regional release-date gaps;
+                    # anything further off is more likely an unrelated
+                    # title reusing the same name.
+                    near = [t for t in candidates if t.year and abs(t.year - yr) <= 1]
+                    if near:
+                        candidates = near
+                    else:
+                        LOGGER.debug(f"imdbio: title matched but year {yr} not close for '{query}'")
+                        return None
+
+            for t in candidates:
+                if t.cover_url:
+                    return t.cover_url
+            return None
+
+        try:
+            return await sync_to_async(_search)
+        except Exception as e:
+            LOGGER.error(f"imdbio search error: {e}")
             return None
 
     @staticmethod
@@ -226,7 +305,9 @@ class ThumbnailFetcher:
 
         LOGGER.info(f"Auto-thumbnail: Searching for '{query}' (TV: {is_tv}, Season: {season}, Year: {parsed.get('year')})")
 
-        poster_url = await cls.search_omdb(query, parsed.get('year'), is_tv=is_tv)
+        poster_url = await cls.search_imdbio(query, parsed.get('year'), is_tv=is_tv)
+        if not poster_url:
+            poster_url = await cls.search_omdb(query, parsed.get('year'), is_tv=is_tv)
 
         if poster_url:
             thumbnail_path = await cls.download_poster(poster_url, user_id)
