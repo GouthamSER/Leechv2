@@ -1,5 +1,6 @@
 # This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
 
+import asyncio
 import importlib
 import importlib.util
 import sys
@@ -59,6 +60,23 @@ class PluginManager:
         self.loaded_modules: Dict[str, Any] = {}
         self.plugins_dir = Path("plugins")
         self.plugins_dir.mkdir(exist_ok=True)
+        # Guards load/unload/reload/enable/disable against concurrent
+        # calls for the same plugin - without this, a double-tap on the
+        # Load/Reload button (each callback runs as its own fire-and-forget
+        # task) can race two calls past the "already loaded" check before
+        # either finishes writing to loaded_modules. The second call's
+        # dict write silently overwrites the first, but the first
+        # instance's handlers are already registered on the pyrogram
+        # dispatcher and never get tracked/removed again - a permanent
+        # handler leak that also double-fires the command on every message.
+        self._locks: Dict[str, asyncio.Lock] = {}
+
+    def _get_lock(self, plugin_name: str) -> asyncio.Lock:
+        lock = self._locks.get(plugin_name)
+        if lock is None:
+            lock = asyncio.Lock()
+            self._locks[plugin_name] = lock
+        return lock
 
     def discover_plugins(self) -> List[str]:
         plugin_files = []
@@ -80,6 +98,10 @@ class PluginManager:
             LOGGER.error(f"Error refreshing commands: {e}", exc_info=True)
 
     async def load_plugin(self, plugin_name: str) -> bool:
+        async with self._get_lock(plugin_name):
+            return await self._load_plugin_locked(plugin_name)
+
+    async def _load_plugin_locked(self, plugin_name: str) -> bool:
         try:
             if plugin_name in self.loaded_modules:
                 LOGGER.warning(f"Plugin {plugin_name} already loaded")
@@ -132,6 +154,10 @@ class PluginManager:
             return False
 
     async def unload_plugin(self, plugin_name: str) -> bool:
+        async with self._get_lock(plugin_name):
+            return await self._unload_plugin_locked(plugin_name)
+
+    async def _unload_plugin_locked(self, plugin_name: str) -> bool:
         try:
             if plugin_name not in self.loaded_modules:
                 LOGGER.error(f"Plugin {plugin_name} not loaded")
@@ -158,52 +184,58 @@ class PluginManager:
             return False
 
     async def reload_plugin(self, plugin_name: str) -> bool:
-        try:
-            await self.unload_plugin(plugin_name)
-            return await self.load_plugin(plugin_name)
-        except Exception as e:
-            LOGGER.error(f"Error reloading plugin {plugin_name}: {e}", exc_info=True)
-            return False
+        # Held for the whole unload+load cycle - not just each half - so a
+        # concurrent load/unload/enable/disable call for the same plugin
+        # can't slip into the gap between them (see _get_lock's docstring).
+        async with self._get_lock(plugin_name):
+            try:
+                await self._unload_plugin_locked(plugin_name)
+                return await self._load_plugin_locked(plugin_name)
+            except Exception as e:
+                LOGGER.error(f"Error reloading plugin {plugin_name}: {e}", exc_info=True)
+                return False
 
     async def enable_plugin(self, plugin_name: str) -> bool:
-        try:
-            if plugin_name not in self.plugins:
-                LOGGER.error(f"Plugin {plugin_name} not found")
-                return False
+        async with self._get_lock(plugin_name):
+            try:
+                if plugin_name not in self.plugins:
+                    LOGGER.error(f"Plugin {plugin_name} not found")
+                    return False
 
-            plugin_instance = self.loaded_modules[plugin_name]
-            if await plugin_instance.on_enable():
-                self.plugins[plugin_name].enabled = True
-                self._refresh_commands()
-                LOGGER.info(f"Plugin {plugin_name} enabled")
-                return True
-            else:
-                LOGGER.error(f"Plugin {plugin_name} failed to enable")
-                return False
+                plugin_instance = self.loaded_modules[plugin_name]
+                if await plugin_instance.on_enable():
+                    self.plugins[plugin_name].enabled = True
+                    self._refresh_commands()
+                    LOGGER.info(f"Plugin {plugin_name} enabled")
+                    return True
+                else:
+                    LOGGER.error(f"Plugin {plugin_name} failed to enable")
+                    return False
 
-        except Exception as e:
-            LOGGER.error(f"Error enabling plugin {plugin_name}: {e}", exc_info=True)
-            return False
+            except Exception as e:
+                LOGGER.error(f"Error enabling plugin {plugin_name}: {e}", exc_info=True)
+                return False
 
     async def disable_plugin(self, plugin_name: str) -> bool:
-        try:
-            if plugin_name not in self.plugins:
-                LOGGER.error(f"Plugin {plugin_name} not found")
-                return False
+        async with self._get_lock(plugin_name):
+            try:
+                if plugin_name not in self.plugins:
+                    LOGGER.error(f"Plugin {plugin_name} not found")
+                    return False
 
-            plugin_instance = self.loaded_modules[plugin_name]
-            if await plugin_instance.on_disable():
-                self.plugins[plugin_name].enabled = False
-                self._refresh_commands()
-                LOGGER.info(f"Plugin {plugin_name} disabled")
-                return True
-            else:
-                LOGGER.error(f"Plugin {plugin_name} failed to disable")
-                return False
+                plugin_instance = self.loaded_modules[plugin_name]
+                if await plugin_instance.on_disable():
+                    self.plugins[plugin_name].enabled = False
+                    self._refresh_commands()
+                    LOGGER.info(f"Plugin {plugin_name} disabled")
+                    return True
+                else:
+                    LOGGER.error(f"Plugin {plugin_name} failed to disable")
+                    return False
 
-        except Exception as e:
-            LOGGER.error(f"Error disabling plugin {plugin_name}: {e}", exc_info=True)
-            return False
+            except Exception as e:
+                LOGGER.error(f"Error disabling plugin {plugin_name}: {e}", exc_info=True)
+                return False
 
     def list_plugins(self) -> List[PluginInfo]:
         return list(self.plugins.values())
