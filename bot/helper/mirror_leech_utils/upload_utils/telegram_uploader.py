@@ -682,11 +682,6 @@ class TelegramUploader:
                 or (not is_video and not is_audio and not is_image)
             ):
                 key = "documents"
-                LOGGER.info(
-                    f"Document branch: file={ospath.basename(self._up_path)} "
-                    f"is_video={is_video} auto_thumb_enabled={self._auto_thumb_enabled} "
-                    f"thumb_already_set={thumb is not None}"
-                )
                 if self._auto_thumb_enabled and thumb is None:
                     from bot.helper.thumbnail_utils import ThumbnailFetcher
 
