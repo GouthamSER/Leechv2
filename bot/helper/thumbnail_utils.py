@@ -177,7 +177,7 @@ class ThumbnailFetcher:
                     title_type=ttype,
                 )
             except ImdbioError as e:
-                LOGGER.debug(f"imdbio: search failed for '{query}': {e}")
+                LOGGER.info(f"imdbio: search failed for '{query}': {e}")
                 return None
 
             if not result or not result.titles:
@@ -192,7 +192,7 @@ class ThumbnailFetcher:
             if title_ok:
                 candidates = title_ok
             else:
-                LOGGER.debug(f"imdbio: no title-matching candidate for '{query}'")
+                LOGGER.info(f"imdbio: no title-matching candidate for '{query}'")
                 return None
 
             if year:
@@ -208,7 +208,7 @@ class ThumbnailFetcher:
                     if near:
                         candidates = near
                     else:
-                        LOGGER.debug(f"imdbio: title matched but year {yr} not close for '{query}'")
+                        LOGGER.info(f"imdbio: title matched but year {yr} not close for '{query}'")
                         return None
 
             for t in candidates:
@@ -244,7 +244,7 @@ class ThumbnailFetcher:
                         "https://www.omdbapi.com/", params=params, timeout=10
                     ) as resp:
                         if resp.status != 200:
-                            LOGGER.debug(f"OMDb API returned {resp.status}")
+                            LOGGER.info(f"OMDb API returned {resp.status}")
                             return None
                         return await resp.json()
 
@@ -256,18 +256,18 @@ class ThumbnailFetcher:
                     data = await _lookup(with_year=False)
 
                 if not data or data.get('Response') != 'True':
-                    LOGGER.debug(f"OMDb: no result for '{query}'")
+                    LOGGER.info(f"OMDb: no result for '{query}'")
                     return None
 
                 cand_title = data.get('Title') or ''
                 if not ThumbnailFetcher._titles_match(query, cand_title):
-                    LOGGER.debug(f"OMDb: title mismatch for '{query}' -> got '{cand_title}'")
+                    LOGGER.info(f"OMDb: title mismatch for '{query}' -> got '{cand_title}'")
                     return None
 
                 if year:
                     cand_year_raw = (data.get('Year') or '').split('\u2013')[0].split('-')[0].strip()
                     if cand_year_raw.isdigit() and abs(int(cand_year_raw) - int(year)) > 1:
-                        LOGGER.debug(
+                        LOGGER.info(
                             f"OMDb: title matched but year {year} not close to {cand_year_raw} for '{query}'"
                         )
                         return None
@@ -291,7 +291,7 @@ class ThumbnailFetcher:
     async def fetch_thumbnail(cls, filename: str, user_id: int) -> str or None:
         parsed = cls.parse_filename(filename)
         if not parsed['name'] or len(parsed['name']) < 3:
-            LOGGER.debug(f"Auto-thumbnail: Could not extract valid name from: {filename}")
+            LOGGER.info(f"Auto-thumbnail: Could not extract valid name from: {filename}")
             return None
 
         is_tv = parsed.get('is_tv', False)
