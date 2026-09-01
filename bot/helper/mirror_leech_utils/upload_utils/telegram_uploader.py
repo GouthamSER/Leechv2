@@ -687,9 +687,6 @@ class TelegramUploader:
                     f"is_video={is_video} auto_thumb_enabled={self._auto_thumb_enabled} "
                     f"thumb_already_set={thumb is not None}"
                 )
-                if is_video and thumb is None:
-                    thumb = await get_video_thumbnail(self._up_path, None)
-
                 if self._auto_thumb_enabled and thumb is None:
                     from bot.helper.thumbnail_utils import ThumbnailFetcher
 
@@ -702,6 +699,15 @@ class TelegramUploader:
                     if self._auto_thumb_path:
                         thumb = self._auto_thumb_path
                         LOGGER.info(f"Using auto-fetched thumbnail: {thumb}")
+
+                # Fall back to an extracted video frame only if the poster
+                # fetch above didn't run or came back empty - this used to
+                # run unconditionally BEFORE the poster fetch for any video
+                # sent as a document, which filled `thumb` first and meant
+                # the imdbio/OMDb lookup below never even got a chance to
+                # run (the "Attempting auto-thumbnail" log never fired).
+                if is_video and thumb is None:
+                    thumb = await get_video_thumbnail(self._up_path, None)
 
                 self._check_cancelled()
                 if thumb == "none":
