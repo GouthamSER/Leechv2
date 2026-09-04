@@ -1,4 +1,3 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
 curl-cffi
 asyncio
 aiofiles
@@ -28,7 +27,7 @@ pillow
 psutil
 pycountry
 pymongo
-pyrotgfork
+wzgram
 python-magic
 pytz
 qbittorrent-api
@@ -36,7 +35,6 @@ requests
 speedtest-cli
 telegraph
 tenacity
-tgcrypto-pyrofork
 urllib3
 uvicorn
 uvloop==0.21.0
