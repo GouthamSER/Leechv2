@@ -21,6 +21,12 @@ try:
     _TERABOX_AVAILABLE = True
 except ImportError:  # pragma: no cover - depends on base image build
     _TERABOX_AVAILABLE = False
+    TeraboxClient = None
+    TeraboxError = Exception
+    TeraboxPasswordError = Exception
+    TeraboxCancelled = Exception
+    TeraboxFile = None
+    APP_ID = CHANNEL = CLIENT_TYPE = EP_QUOTA = WEB = None
 
 from bot import task_dict, task_dict_lock, bot_loop
 from bot.core.config_manager import Config
@@ -199,9 +205,11 @@ async def _select_download_cookie(listener) -> str:
     if not order:
         order = [user or owner]
     chosen = order[0]
-    listener.terabox_cookie = chosen["path"]
-    listener.terabox_cookie_source = chosen["label"]
-    return chosen["path"]
+    if chosen:
+        listener.terabox_cookie = chosen.get("path", "")
+        listener.terabox_cookie_source = chosen.get("label", "")
+        return chosen.get("path", "")
+    return ""
 
 
 def _build_file_list_meta(entries):

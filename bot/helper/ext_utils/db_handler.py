@@ -39,7 +39,7 @@ class DbManager:
     async def connect(self):
         try:
             if self._conn is not None:
-                await self._conn.close()
+                self._conn.close()
             self._conn = AsyncIOMotorClient(
                 Config.DATABASE_URL, server_api=ServerApi("1")
             )
@@ -54,7 +54,7 @@ class DbManager:
     async def disconnect(self):
         self._return = True
         if self._conn is not None:
-            await self._conn.close()
+            self._conn.close()
         self._conn = None
 
     async def update_deploy_config(self):

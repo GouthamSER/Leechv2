@@ -362,7 +362,6 @@ class TaskListener(TaskConfig):
         from aiofiles.os import rename as aiorename
         from os import walk
         from natsort import natsorted
-        from bot.helper.ext_utils.bot_utils import sync_to_async
 
         has_mirror_settings = self.mirror_prefix or self.mirror_suffix or self.mirror_name_swap
         has_leech_settings = self.leech_prefix or self.leech_suffix or self.leech_name_swap
@@ -631,7 +630,8 @@ class TaskListener(TaskConfig):
         except AttributeError:
             elapsed = 0
         msg += BotTheme("ELAPSE", Time=get_readable_time(elapsed))
-        msg += BotTheme("MODE", Mode=f"{self.mode[0]} - {self.mode[1]}")
+        mode_str = f"{self.mode[0]} - {self.mode[1]}" if len(self.mode) >= 2 else "N/A"
+        msg += BotTheme("MODE", Mode=mode_str)
         LOGGER.info(f"Task Done: {self.name}")
         if self.is_leech:
             msg += BotTheme("L_TOTAL_FILES", Files=folders)
@@ -812,11 +812,12 @@ class TaskListener(TaskConfig):
 
         error_str = str(error)
         friendly_error = self._beautify_error(error_str)
+        mode_str = f"{self.mode[0]} - {self.mode[1]}" if len(self.mode) >= 2 else "N/A"
         
         msg = (
             f"""<i><b>Limit Breached!</b></i>
  • <b>Task Size:</b> {get_readable_file_size(self.size)}
- • <b>Mode:</b> {self.mode[0]} - {self.mode[1]}
+ • <b>Mode:</b> {mode_str}
 
 {error}"""
             if is_limit
@@ -824,7 +825,7 @@ class TaskListener(TaskConfig):
 • <b>Task for:</b> {self.tag}
 
 • <b>Due To:</b> {escape(friendly_error)}
-• <b>Mode:</b> {self.mode[0]} - {self.mode[1]}
+• <b>Mode:</b> {mode_str}
 • <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}"""
         )
 
@@ -970,12 +971,13 @@ class TaskListener(TaskConfig):
         )
         
         friendly_error = self._beautify_error(str(error))
+        mode_str = f"{self.mode[0]} - {self.mode[1]}" if len(self.mode) >= 2 else "N/A"
 
         msg = f"""<i><b>Upload Stopped!</b></i>
 • <b>Task for:</b> {self.tag}
 
 • <b>Due To:</b> {escape(friendly_error)}
-• <b>Mode:</b> {self.mode[0]} - {self.mode[1]}
+• <b>Mode:</b> {mode_str}
 • <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}"""
         await send_message(self.message, msg)
         if count == 0:

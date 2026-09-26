@@ -355,7 +355,7 @@ class TelegramUploader:
                         break
                     except (FloodWait, FloodPremiumWait) as f:
                         LOGGER.warning(str(f))
-                        await sleep(f.value * 1.3)
+                        await sleep(float(f.value) * 1.3)
             msgs_list = await ss_client.send_media_group(
                 chat_id=self._upload_chat_id,
                 reply_to_message_id=self._reply_to_id,
@@ -425,7 +425,7 @@ class TelegramUploader:
                 return
             except (FloodWait, FloodPremiumWait) as f:
                 last_err = f
-                delay = f.value * 1.3
+                delay = float(f.value) * 1.3
                 flood_waits += 1
                 total_wait += delay
                 LOGGER.warning(
@@ -662,6 +662,7 @@ class TelegramUploader:
             self._thumb = None
         thumb = self._thumb
         self._is_corrupted = False
+        key = "documents" if force_document else ""
         try:
             self._check_cancelled()
             is_video, is_audio, is_image = await get_document_type(self._up_path)

@@ -100,6 +100,10 @@ class TaskConfig:
         self.user_id = self.user.id
         self.user_dict = user_data.get(self.user_id, {})
         self.metadata_processor = MetadataProcessor()
+        self.default_metadata_dict = {}
+        self.audio_metadata_dict = {}
+        self.video_metadata_dict = {}
+        self.subtitle_metadata_dict = {}
         for k in ("METADATA", "AUDIO_METADATA", "VIDEO_METADATA", "SUBTITLE_METADATA"):
             v = self.user_dict.get(k, {})
             if k == "METADATA":
@@ -202,7 +206,7 @@ class TaskConfig:
         self.processing_msg = None
         self.file_details = {}
         self.selected_dumps = None
-        self.mode = tuple()
+        self.mode = ("N/A", "N/A")
 
     def _set_mode_engine(self):
         self.source_url = (
@@ -645,10 +649,11 @@ class TaskConfig:
 
             if self.thumb and self.thumb != "none":
                 if is_telegram_link(self.thumb):
-                    msg = (await get_tg_link_message(self.thumb))[0]
+                    res = await get_tg_link_message(self.thumb)
+                    msg = res[0] if res else None
                     self.thumb = (
                         await create_thumb(msg)
-                        if msg.photo or msg.document
+                        if msg and (msg.photo or msg.document)
                         else ""
                     )
                 elif self.thumb.startswith("http"):
@@ -839,6 +844,8 @@ class TaskConfig:
         LOGGER.info(f"Extracting: {self.name}")
         async with task_dict_lock:
             task_dict[self.mid] = SevenZStatus(self, sevenz, gid, "Extract")
+        code = 0
+        t_path = dl_path
         for dirpath, _, files in await sync_to_async(
             walk, self.up_dir or self.dir, topdown=False
         ):
@@ -870,6 +877,8 @@ class TaskConfig:
         return t_path if self.is_file and code == 0 else dl_path
 
     async def proceed_ffmpeg(self, dl_path, gid):
+        if not self.ffmpeg_cmds:
+            return False
         checked = False
         cmds = []
         for item in self.ffmpeg_cmds:

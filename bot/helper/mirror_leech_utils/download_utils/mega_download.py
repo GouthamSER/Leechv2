@@ -353,7 +353,9 @@ async def add_mega_download(listener, path):
         async_api._mega_listener = mega_listener
         api.addListener(mega_listener)
 
-        if (MEGA_EMAIL := Config.MEGA_EMAIL) and (MEGA_PASSWORD := Config.MEGA_PASSWORD):
+        MEGA_EMAIL = Config.MEGA_EMAIL
+        MEGA_PASSWORD = Config.MEGA_PASSWORD
+        if MEGA_EMAIL and MEGA_PASSWORD:
             await async_api.login(MEGA_EMAIL, MEGA_PASSWORD)
             if mega_listener.error:
                 await listener.on_download_error(mega_listener.error)
@@ -485,6 +487,7 @@ async def add_mega_download(listener, path):
             return
 
         is_folder_download = _node_is_folder(node)
+        file_entries = []
 
         if is_folder_download and folder_api:
             file_entries = await sync_to_async(_walk_mega_tree, folder_api, node)

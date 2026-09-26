@@ -217,6 +217,7 @@ class RcloneTransferHelper:
         ]
         res, err, code = await cmd_exec(cmd)
 
+        link = ""
         if code == 0:
             result = loads(res)
             fid = next(
@@ -231,7 +232,6 @@ class RcloneTransferHelper:
             LOGGER.error(
                 f"while getting drive link. Path: {destination}. Stderr: {err}"
             )
-            link = ""
         return link
 
     async def _start_upload(self, cmd, remote_type):
@@ -353,6 +353,7 @@ class RcloneTransferHelper:
         else:
             destination = f"{oremote}:{self._listener.name}"
 
+        link = ""
         if remote_type == "drive":
             link = await self._get_gdrive_link(oconfig_path, destination, mime_type)
         else:
@@ -369,7 +370,6 @@ class RcloneTransferHelper:
                 link = res
             elif code != -9:
                 LOGGER.error(f"while getting link. Path: {destination} | Stderr: {err}")
-                link = ""
         if self._listener.is_cancelled:
             return
         LOGGER.info(f"Upload Done. Path: {destination}")
@@ -469,8 +469,6 @@ class RcloneTransferHelper:
         if source.split(":")[-1].startswith("rclone_select"):
             source = f"{source.split(':')[0]}:"
             self._rclone_select = True
-        else:
-            ext = "*.{" + ",".join(self._listener.excluded_extensions) + "}"
         cmd = [
             BinConfig.RCLONE_NAME,
             method,
@@ -490,7 +488,8 @@ class RcloneTransferHelper:
         ]
         if self._rclone_select:
             cmd.extend(("--files-from", self._listener.link))
-        else:
+        elif self._listener.excluded_extensions:
+            ext = "*.{" + ",".join(self._listener.excluded_extensions) + "}"
             cmd.extend(("--exclude", ext))
         if rcflags := self._listener.rc_flags:
             rcflags = rcflags.split("|")

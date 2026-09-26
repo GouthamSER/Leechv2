@@ -689,7 +689,6 @@ MIRROR_HELP_DICT = {
     "Leech-Type": leech_as,
     "FFmpeg-Cmds": ffmpeg_cmds,
     "Metadata": metadata,
-    "Merge-Video": merge_video,
 }
 
 CLONE_HELP_DICT = {

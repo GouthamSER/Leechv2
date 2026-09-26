@@ -378,7 +378,7 @@ class YoutubeDLHelper:
                     self.opts[key].append(value)
             elif key == "download_ranges":
                 if isinstance(value, list):
-                    self.opts[key] = lambda info, ytdl: value
+                    self.opts[key] = lambda info, ytdl, val=value: val
             else:
                 if key == "writethumbnail" and value is True:
                     self.keep_thumb = True

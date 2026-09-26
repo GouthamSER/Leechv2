@@ -345,7 +345,7 @@ async def get_streams(file):
         return None
 
 
-async def take_ss(video_file, ss_nb) -> bool:
+async def take_ss(video_file, ss_nb) -> str | bool:
     duration = (await get_media_info(video_file))[0]
     if duration != 0:
         dirpath, name = video_file.rsplit("/", 1)

@@ -13,6 +13,9 @@ try:
     _TERABOX_AVAILABLE = True
 except ImportError:  # pragma: no cover - depends on base image build
     _TERABOX_AVAILABLE = False
+    TeraboxClient = None
+    TeraboxError = Exception
+    TeraboxCancelled = Exception
 
 _SESSION_PATH = ".terabox_upload_session.json"
 

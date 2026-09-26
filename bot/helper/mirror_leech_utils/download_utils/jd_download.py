@@ -125,6 +125,7 @@ async def add_jd_download(listener, path):
         await listener.on_download_error("JDownloader is currently disabled by the bot owner.")
         return
 
+    gid = ""
     try:
         async with jd_listener_lock:
             gid = token_hex(5)

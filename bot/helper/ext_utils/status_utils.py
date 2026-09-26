@@ -153,13 +153,19 @@ def get_readable_file_size(size_in_bytes):
 
 
 def get_readable_time(seconds: int):
+    try:
+        seconds = int(seconds) if seconds else 0
+    except Exception:
+        seconds = 0
+    if seconds <= 0:
+        return "0s"
     periods = [("d", 86400), ("h", 3600), ("m", 60), ("s", 1)]
     result = ""
     for period_name, period_seconds in periods:
         if seconds >= period_seconds:
             period_value, seconds = divmod(seconds, period_seconds)
             result += f"{int(period_value)}{period_name}"
-    return result
+    return result or "0s"
 
 
 def get_raw_time(time_str: str) -> int:
@@ -190,19 +196,26 @@ def time_to_seconds(time_duration):
 
 
 def speed_string_to_bytes(size_text: str):
-    size = 0
-    size_text = size_text.lower()
-    if "k" in size_text:
-        size += float(size_text.split("k")[0]) * 1024
-    elif "m" in size_text:
-        size += float(size_text.split("m")[0]) * 1048576
-    elif "g" in size_text:
-        size += float(size_text.split("g")[0]) * 1073741824
-    elif "t" in size_text:
-        size += float(size_text.split("t")[0]) * 1099511627776
-    elif "b" in size_text:
-        size += float(size_text.split("b")[0])
-    return size
+    if not size_text:
+        return 0
+    try:
+        size = 0
+        size_text = str(size_text).strip().lower()
+        if "k" in size_text:
+            size += float(size_text.split("k")[0]) * 1024
+        elif "m" in size_text:
+            size += float(size_text.split("m")[0]) * 1048576
+        elif "g" in size_text:
+            size += float(size_text.split("g")[0]) * 1073741824
+        elif "t" in size_text:
+            size += float(size_text.split("t")[0]) * 1099511627776
+        elif "b" in size_text:
+            size += float(size_text.split("b")[0])
+        elif size_text.replace(".", "", 1).isdigit():
+            size += float(size_text)
+        return size
+    except Exception:
+        return 0
 
 
 def get_progress_bar_string(pct):

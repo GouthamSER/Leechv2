@@ -25,6 +25,8 @@ try:
     _TERABOX_AVAILABLE = True
 except ImportError:  # pragma: no cover - SDK only present in the built image
     _TERABOX_AVAILABLE = False
+    TeraboxClient = None
+    TeraboxError = Exception
 
 LIST_LIMIT = 8
 

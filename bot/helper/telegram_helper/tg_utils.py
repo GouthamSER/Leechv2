@@ -36,6 +36,8 @@ async def forcesub(message, ids, button=None):
     _msg = ""
     for channel_id in ids.split():
         chat = await chat_info(channel_id)
+        if not chat:
+            continue
         try:
             await chat.get_member(message.from_user.id)
         except UserNotParticipant:

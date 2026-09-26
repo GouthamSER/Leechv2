@@ -52,10 +52,9 @@ async def add_qb_torrent(listener, path, ratio, seed_time):
         await listener.on_download_error("Torrents are disabled in the configuration.")
         return
 
+    downloaded_torrent = None
     try:
         form = AddFormBuilder.with_client(TorrentManager.qbittorrent)
-
-        downloaded_torrent = None
 
         if await aiopath.exists(listener.link):
             async with aiopen(listener.link, "rb") as f:

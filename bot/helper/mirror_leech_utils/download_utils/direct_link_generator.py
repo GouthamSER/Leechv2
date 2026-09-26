@@ -1438,8 +1438,8 @@ def cf_bypass(url):
         if _json["status"] == "ok":
             return _json["solution"]["response"]
     except Exception as e:
-        e
-    raise DirectDownloadLinkException("ERROR: Con't bypass cloudflare")
+        raise DirectDownloadLinkException(f"ERROR: Can't bypass cloudflare ({e})") from e
+    raise DirectDownloadLinkException("ERROR: Can't bypass cloudflare")
 
 
 def send_cm_file(url, file_id=None):
