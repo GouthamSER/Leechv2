@@ -214,11 +214,13 @@ def serviceaccountfactory(
     create_projects=None,
     max_projects=12,
     enable_services=None,
-    services=["iam", "drive"],
+    services=None,
     create_sas=None,
     delete_sas=None,
     download_keys=None,
 ):
+    if services is None:
+        services = ["iam", "drive"]
     selected_projects = []
     try:
         proj_id = loads(open(credentials, "r").read())["installed"]["project_id"]
@@ -226,7 +228,7 @@ def serviceaccountfactory(
         exit("Error reading credentials file: " + str(e))
 
     creds = None
-    if path and not path:
+    if not path:
         path = "accounts"
     if path and not path.endswith("/"):
         path = path.rstrip("/")

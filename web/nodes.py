@@ -139,6 +139,8 @@ def make_tree(res, tool, root_path=""):
                     file_id=i["index"],
                     progress=progress,
                 )
+    else:
+        return {"files": [], "engine": tool}
 
     result = create_list(parent)
     return {"files": result, "engine": tool}

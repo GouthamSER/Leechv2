@@ -133,7 +133,7 @@ async def re_verify(paused, resumed, hash_id):
 
 @app.get("/app/files", response_class=HTMLResponse)
 async def files(request: Request):
-    return templates.TemplateResponse(request, "page.html")
+    return templates.TemplateResponse("page.html", {"request": request})
 
 
 @app.api_route(
@@ -414,7 +414,7 @@ async def set_aria2(gid, selected_files):
 
 @app.get("/", response_class=HTMLResponse)
 async def homepage(request: Request):
-    return templates.TemplateResponse(request, "landing.html")
+    return templates.TemplateResponse("landing.html", {"request": request})
 
 
 def rewrite_location(location: str, proxy_prefix: str) -> str:
@@ -479,7 +479,7 @@ async def protected_proxy(
 
 
 @app.api_route("/qbit/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
-async def qbittorrent_proxy(path: str = "", request: Request = None):
+async def qbittorrent_proxy(request: Request, path: str = ""):
     password = request.query_params.get("pass") or request.cookies.get("qbit_pass")
     if not password:
         raise HTTPException(status_code=403, detail="Missing password")
@@ -491,7 +491,7 @@ async def qbittorrent_proxy(path: str = "", request: Request = None):
 
 @app.exception_handler(Exception)
 async def page_not_found(_, exc):
-    LOGGER.error("Unhandled web exception: %s: %s", type(exc).__name__, exc, exc_info=True)
+    LOGGER.error("Unhandled web exception: %s: %s", type(exc).__name__, exc, exc_info=exc)
     return HTMLResponse(
         "<h1>404: Task not found! Mostly wrong input.</h1>",
         status_code=404,

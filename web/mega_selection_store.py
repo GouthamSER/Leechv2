@@ -23,6 +23,7 @@ def _is_safe_gid(gid: str) -> bool:
 def write_state(gid: str, file_list_metadata: list, selected_ids) -> bool:
     if not _is_safe_gid(gid):
         return False
+    tmp = None
     try:
         os.makedirs(_BASE_DIR, exist_ok=True)
         target = _path(gid)
@@ -42,9 +43,9 @@ def write_state(gid: str, file_list_metadata: list, selected_ids) -> bool:
         return True
     except OSError:
         try:
-            if os.path.exists(tmp):
+            if tmp and os.path.exists(tmp):
                 os.remove(tmp)
-        except (NameError, OSError):
+        except OSError:
             pass
         return False
 

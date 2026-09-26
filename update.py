@@ -13,6 +13,7 @@ from logging import (
     ERROR,
 )
 from os import path, remove, environ
+from shutil import rmtree
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from subprocess import run as srun, call as scall
@@ -113,7 +114,7 @@ UPSTREAM_BRANCH = (config_file.get("UPSTREAM_BRANCH") or "").strip() or "master"
 
 if UPSTREAM_REPO:
     if path.exists(".git"):
-        srun(["rm", "-rf", ".git"])
+        rmtree(".git", ignore_errors=True)
 
     update = srun(
         [
