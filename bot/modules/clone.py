@@ -192,11 +192,12 @@ class Clone(TaskListener):
                 return
             if limit_exceeded := await limit_checker(self):
                 await database.remove_shared_task(self.message.id, TgClient.ID, user_id=self.user_id)
+                mode_str = f"{self.mode[0]} - {self.mode[1]}" if len(self.mode) >= 2 else "N/A"
                 await send_message(
                     self.message,
                     f"""<i><b>Limit Breached!</b></i>
  • <b>Task Size:</b> {get_readable_file_size(self.size)}
- • <b>Mode:</b> {self.mode[0]} - {self.mode[1]}
+ • <b>Mode:</b> {mode_str}
 
 {limit_exceeded}""",
                 )

@@ -47,7 +47,7 @@ basicConfig(
 )
 
 LOGGER = getLogger(__name__)
-cpu_no = cpu_count()
+cpu_no = cpu_count() or 1
 threads = max(1, cpu_no // 2)
 cores = ",".join(str(i) for i in range(threads))
 

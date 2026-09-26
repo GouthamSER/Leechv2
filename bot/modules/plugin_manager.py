@@ -21,6 +21,8 @@ from bot.helper.telegram_helper.message_utils import (
 async def get_plugins_menu(user_id: int, stype: str = "main"):
     plugin_manager = get_plugin_manager()
     buttons = ButtonMaker()
+    text = ""
+    btns = None
 
     if stype == "main":
         loaded_plugins = plugin_manager.list_plugins()

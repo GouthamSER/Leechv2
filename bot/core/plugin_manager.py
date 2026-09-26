@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from pyrogram import Client
+from pyrogram.filters import command as command_filter, regex as regex_filter
 from pyrogram.handlers import CallbackQueryHandler, MessageHandler
 
 from bot import LOGGER
@@ -43,14 +44,14 @@ class PluginBase:
         return True
 
     def register_command(self, command: str, handler_func, filters=None):
-        if filters is None:
-            filters = CustomFilters.authorized
-        return MessageHandler(handler_func, filters=command & filters)
+        cmd_filter = command_filter(command) if isinstance(command, str) else command
+        final_filters = cmd_filter & filters if filters is not None else cmd_filter
+        return MessageHandler(handler_func, filters=final_filters)
 
     def register_callback(self, pattern: str, callback_func, filters=None):
-        if filters is None:
-            filters = CustomFilters.authorized
-        return CallbackQueryHandler(callback_func, filters=pattern & filters)
+        pat_filter = regex_filter(pattern) if isinstance(pattern, str) else pattern
+        final_filters = pat_filter & filters if filters is not None else pat_filter
+        return CallbackQueryHandler(callback_func, filters=final_filters)
 
 
 class PluginManager:

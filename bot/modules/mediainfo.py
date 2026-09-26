@@ -46,14 +46,20 @@ async def gen_mediainfo(message, link=None, media=None, mmsg=None):
                             await f.write(chunk)
                             break
         elif media:
-            des_path = ospath.join(path, media.file_name)
-            file_size = media.file_size
+            file_name = getattr(media, "file_name", None) or "media_file"
+            des_path = ospath.join(path, file_name)
+            file_size = getattr(media, "file_size", 0) or 0
             if file_size <= 50000000:
                 await mmsg.download(ospath.join(getcwd(), des_path))
             else:
                 async for chunk in TgClient.bot.stream_media(media, limit=5):
                     async with aiopen(des_path, "ab") as f:
                         await f.write(chunk)
+        else:
+            await edit_message(temp_send, "No link or media found to generate mediainfo.")
+            return
+        if not des_path:
+            return
         stdout, _, _ = await cmd_exec(split(f'mediainfo "{des_path}"'))
         tc = f"<h4>📌 {ospath.basename(des_path)}</h4><br><br>"
         if len(stdout) != 0:

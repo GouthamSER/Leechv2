@@ -188,7 +188,8 @@ async def status_pages(_, query):
                         dl_speed += speed_string_to_bytes(speed)
                 case MirrorStatus.STATUS_UPLOAD:
                     tasks["Upload"] += 1
-                    up_speed += speed_string_to_bytes(speed)
+                    if speed:
+                        up_speed += speed_string_to_bytes(speed)
                 case MirrorStatus.STATUS_SEED:
                     tasks["Seed"] += 1
                 case MirrorStatus.STATUS_ARCHIVE:

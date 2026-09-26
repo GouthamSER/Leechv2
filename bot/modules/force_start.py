@@ -19,7 +19,7 @@ from bot.helper.ext_utils.task_manager import start_dl_from_queued, start_up_fro
 @new_task
 async def remove_from_queue(_, message):
     user_id = (message.from_user or message.sender_chat).id
-    msg = message.text.split()
+    msg = (message.text or "").split()
     status = msg[1] if len(msg) > 1 and msg[1] in ["fd", "fu"] else ""
     if status and len(msg) > 2 or not status and len(msg) > 1:
         gid = msg[2] if status else msg[1]
@@ -45,6 +45,8 @@ By reply to task cmd:
 <code>/{BotCommands.ForceStartCommand[1]}</code> fd (force download)
 """
         await send_message(message, msg)
+        return
+    else:
         return
     if (
         Config.OWNER_ID != user_id

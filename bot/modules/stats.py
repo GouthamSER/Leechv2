@@ -62,6 +62,7 @@ commands = {
 async def get_stats(event, key="home"):
     user_id = event.from_user.id
     btns = ButtonMaker()
+    msg = ""
     if key == "home":
         btns = ButtonMaker()
         btns.data_button("Bot Stats", f"stats {user_id} stbot")

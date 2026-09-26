@@ -631,10 +631,7 @@ async def get_user_settings(from_user, stype="main"):
         btns = buttons.build_menu(2)
 
     elif stype == "general":
-        if user_dict.get("DEFAULT_UPLOAD", ""):
-            default_upload = user_dict["DEFAULT_UPLOAD"]
-        elif "DEFAULT_UPLOAD" not in user_dict:
-            default_upload = Config.DEFAULT_UPLOAD
+        default_upload = user_dict.get("DEFAULT_UPLOAD") or Config.DEFAULT_UPLOAD
         _du_names = {"gd": "GDRIVE API", "rc": "RCLONE", "tbx": "TERABOX"}
         # Cycle: rc -> gd -> tbx -> rc
         _du_next = {"rc": "gd", "gd": "tbx", "tbx": "rc"}
@@ -804,6 +801,7 @@ async def get_user_settings(from_user, stype="main"):
         )
 
         text += f"\n • <b>Auto Thumbnail:</b> <b>{auto_thumb}</b>"
+        text += f"\n • <b>Thumbnail Layout:</b> <b>{thumb_layout}</b>"
         text += f"\n • <b>Dump Mode:</b> <b>{dump_mode_msg}</b>"
         text += "\n\n<blockquote expandable><b>➜ Thumbnail Priority:</b>"
         text += "\n 1️⃣ Custom Thumbnail (highest)"
@@ -1213,6 +1211,8 @@ async def get_user_settings(from_user, stype="main"):
  • <b>YT Cookie File:</b> {user_cookie_msg}
 
 <blockquote><i>💡 Excluded extensions are skipped during upload. Upload paths are shortcuts for frequently used destinations.</i></blockquote>"""
+    else:
+        return await get_user_settings(from_user, "main")
 
     return text, btns
 
@@ -1257,6 +1257,10 @@ async def add_file(_, message, ftype, rfunc):
         await makedirs(tbpath, exist_ok=True)
         des_dir = f"{tbpath}{user_id}.txt"
         await message.download(file_name=des_dir)
+    else:
+        return
+    if not des_dir:
+        return
     await delete_message(message)
     update_user_ldata(user_id, ftype, des_dir)
     await rfunc()
@@ -1928,7 +1932,7 @@ async def edit_user_settings(client, query):
         elif data[2] == "addone":
             text = f"Add one or more string key and value to {data[3]}. Example: {{'key 1': 62625261, 'key 2': 'value 2'}}. Timeout: 60 sec"
             func = add_one
-        elif data[2] == "rmone":
+        else:
             text = f"Remove one or more key from {data[3]}. Example: key 1/key2/key 3. Timeout: 60 sec"
             func = remove_one
         buttons.data_button("Stop", f"userset {user_id} menu {data[3]} stop")

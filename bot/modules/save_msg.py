@@ -3,13 +3,11 @@
 from pyrogram.filters import regex
 from pyrogram.handlers import CallbackQueryHandler
 
-from bot import user_data
 from bot.helper.telegram_helper.button_build import ButtonMaker
 
 
 async def save_message(_, query):
     user_id = query.from_user.id
-    user_dict = user_data.get(user_id, {})
     data = query.data.split()
 
     if len(data) < 2:

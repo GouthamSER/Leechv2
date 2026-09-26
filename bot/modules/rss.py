@@ -353,6 +353,7 @@ async def rss_get(_, message, pre_event):
         count = int(args[1])
         data = rss_dict[user_id].get(title, False)
         if data and count > 0:
+            msg = None
             try:
                 msg = await send_message(
                     message, f"Getting the last <b>{count}</b> item(s) from {title}"
@@ -376,17 +377,25 @@ async def rss_get(_, message, pre_event):
                     with BytesIO(item_info_ecd) as out_file:
                         out_file.name = f"rssGet {title} items_no. {count}.txt"
                         await send_file(message, out_file)
-                    await delete_message(msg)
+                    if msg:
+                        await delete_message(msg)
                 else:
-                    await edit_message(msg, item_info)
+                    if msg:
+                        await edit_message(msg, item_info)
             except IndexError as e:
                 LOGGER.error(str(e))
-                await edit_message(
-                    msg, "Parse depth exceeded. Try again with a lower value."
-                )
+                if msg:
+                    await edit_message(
+                        msg, "Parse depth exceeded. Try again with a lower value."
+                    )
+                else:
+                    await send_message(message, "Parse depth exceeded. Try again with a lower value.")
             except Exception as e:
                 LOGGER.error(str(e))
-                await edit_message(msg, str(e))
+                if msg:
+                    await edit_message(msg, str(e))
+                else:
+                    await send_message(message, str(e))
         else:
             await send_message(message, "Enter a valid title. Title not found!")
     except Exception as e:

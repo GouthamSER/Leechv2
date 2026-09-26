@@ -132,6 +132,7 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False, message=None):
     state = state_dict.get(chat_id, "view") if chat_id else "view"
     offset = start_dict.get(chat_id, 0) if chat_id else 0
     buttons = ButtonMaker()
+    msg = ""
     if key is None:
         buttons.data_button("Aria2c Settings", "botset aria")
         buttons.data_button("Config Variables", "botset var")

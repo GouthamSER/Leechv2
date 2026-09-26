@@ -69,6 +69,9 @@ async def search(key, site, message, method):
                 api = f"{Config.SEARCH_API_LINK}/api/v1/all/recent?limit={Config.SEARCH_LIMIT}"
             else:
                 api = f"{Config.SEARCH_API_LINK}/api/v1/recent?site={site}&limit={Config.SEARCH_LIMIT}"
+        else:
+            await edit_message(message, f"Invalid search method: {method}")
+            return
         try:
             async with AsyncClient() as client:
                 response = await client.get(api)
@@ -280,10 +283,7 @@ async def torrent_search_update(_, query):
         method = data[3]
         if method.startswith("api"):
             if key is None:
-                if method == "apirecent":
-                    endpoint = "Recent"
-                elif method == "apitrend":
-                    endpoint = "Trending"
+                endpoint = "Recent" if method == "apirecent" else "Trending"
                 await edit_message(
                     message,
                     f"<b>Listing {endpoint} Items...\nTorrent Site:- <i>{SITES.get(site)}</i></b>",

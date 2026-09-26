@@ -34,7 +34,7 @@ async def select(_, message):
         await send_message(message, "Could not identify sender.")
         return
     user_id = sender.id
-    msg = message.text.split("_", maxsplit=1)
+    msg = (message.text or "").split("_", maxsplit=1)
     if len(msg) > 1:
         gid = msg[1].split("@", maxsplit=1)[0]
         task = await get_task_by_gid(gid)
@@ -54,6 +54,8 @@ async def select(_, message):
             + "But you can always use /cmd with arg `s` to select files before download start."
         )
         await send_message(message, msg)
+        return
+    else:
         return
     if (
         Config.OWNER_ID != user_id

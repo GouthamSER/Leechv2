@@ -25,7 +25,7 @@ from bot.helper.telegram_helper.message_utils import (
 @new_task
 async def cancel(_, message):
     user_id = (message.from_user or message.sender_chat).id
-    msg = message.text.split("_", maxsplit=1)
+    msg = (message.text or "").split("_", maxsplit=1)
     if len(msg) > 1:
         cmd_data = msg[1].split("@", maxsplit=1)
         if len(cmd_data) > 1 and cmd_data[1].strip() != TgClient.BNAME:
@@ -51,6 +51,8 @@ async def cancel(_, message):
             f" or send <code>/{BotCommands.CancelTaskCommand[0]} GID</code> to cancel it!"
         )
         await send_message(message, msg)
+        return
+    else:
         return
     if (
         Config.OWNER_ID != user_id
