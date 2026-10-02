@@ -1,4 +1,4 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
+# This file is a part of Leevchv2 (github.com/GouthamSER/Leechv2
 
 from os import path as ospath
 from re import sub as re_sub
@@ -38,7 +38,7 @@ async def format_filename(file_name, user_dict, is_leech=False):
     original_file = file_name
 
     file_name = re_sub(
-        r"www\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,6}",
+        r"www\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,12}(?:\.[a-zA-Z]{2,3})?",
         "",
         file_name,
     )
