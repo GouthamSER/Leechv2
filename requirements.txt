@@ -1,5 +1,6 @@
 curl-cffi
 asyncio
+tgcrypto
 aiofiles
 aiohttp[speedups]
 aioshutil
