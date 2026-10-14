@@ -63,6 +63,14 @@ class TorrentManager:
             try:
                 version = await cls.qbittorrent.app.version()
                 LOGGER.info(f"qBittorrent connected! Version: {version}")
+                from bot.helper.mirror_leech_utils.qbit_compat import (
+                    qbit_version_tuple,
+                )
+
+                if qbit_version_tuple(version) < (5, 0, 0):
+                    LOGGER.warning(
+                        f"qBittorrent {version} is old. Need >= 5.0 (stop/start API). Update binary."
+                    )
             except Exception as test_error:
                 LOGGER.error(f"qBittorrent connection test failed: {type(test_error).__name__}: {test_error}")
                 raise
