@@ -6,7 +6,7 @@ aioshutil
 anytree
 apscheduler
 aioaria2
-aioqbt
+aioqbt>=1.1.0
 cloudscraper
 dnspython
 fastapi
