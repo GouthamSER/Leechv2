@@ -1,0 +1,16 @@
+name: Copy base image to my Docker Hub
+
+on:
+  workflow_dispatch:
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Copy irisxdr/neo-wzml -> imgouthamjosh/leechv2-base
+        run: docker buildx imagetools create -t imgouthamjosh/leechv2-base:latest irisxdr/neo-wzml:latest
