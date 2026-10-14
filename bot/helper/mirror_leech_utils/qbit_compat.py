@@ -14,6 +14,17 @@ SEEDING_STATES = {"queuedUP", "stalledUP", "uploading", "forcedUP"}
 TERMINAL_SEED_STATES = {"stoppedUP", "pausedUP"}
 
 
+def qbit_version_tuple(version: str) -> tuple:
+    """Parse qBittorrent version like 'v5.2.4' -> (5, 2, 4)."""
+    nums = []
+    for part in str(version).lstrip("vV").split("."):
+        digits = "".join(c for c in part if c.isdigit())
+        if not digits:
+            break
+        nums.append(int(digits))
+    return tuple(nums)
+
+
 def torrent_tags(torrent) -> list[str]:
     tags = getattr(torrent, "tags", None)
     if not tags:
