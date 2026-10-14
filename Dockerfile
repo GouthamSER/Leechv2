@@ -1,6 +1,4 @@
-
-
-FROM irisxdr/neo-wzml:latest
+FROM imgouthamjosh/leechv2-base
 
 WORKDIR /usr/src/app
 
