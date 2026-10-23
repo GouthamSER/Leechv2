@@ -27,7 +27,7 @@ pillow
 psutil
 pycountry
 pymongo
-dzgram==2.3.37
+wzgram[fast]
 python-magic
 pytz
 qbittorrent-api
