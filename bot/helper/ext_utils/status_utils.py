@@ -50,7 +50,7 @@ class EngineStatus:
         self.STATUS_AIOHTTP = f"AioHttp v{ver.get('aiohttp', 'N/A')}"
         self.STATUS_GDAPI = f"Google-API v{ver.get('gapi', 'N/A')}"
         self.STATUS_QBIT = f"qBit v{ver.get('qBittorrent', 'N/A')}"
-        self.STATUS_TGRAM = f"wzGram v{pyrover}"
+        self.STATUS_TGRAM = f"WzPyro v{pyrover}"
         self.STATUS_MEGA = f"MegaSDK v{ver.get('mega', '8.1.1')}"
         self.STATUS_TERABOX = f"teraboxSDK v{ver.get('terabox', '1.0.0')}"
         self.STATUS_YTDLP = f"yt-dlp v{ver.get('yt-dlp', 'N/A')}"
@@ -218,6 +218,25 @@ def speed_string_to_bytes(size_text: str):
         return 0
 
 
+def _status_line(status, url):
+    if url:
+        return BotTheme("STATUS", Status=status, Url=url)
+    return BotTheme("STATUS_PLAIN", Status=status)
+
+
+def get_status_bar_string(pct, slots=13):
+    """Task status bar: [■■■■■▨□□□□□□□] 44.05%"""
+    try:
+        pct = float(str(pct).strip().rstrip("%").strip() or 0)
+    except (TypeError, ValueError):
+        pct = 0
+    p = min(max(pct, 0), 100)
+    filled = p / 100 * slots
+    full = int(filled)
+    part = 1 if (filled - full) > 0 and full < slots else 0
+    return f"[{'■' * full}{'▨' * part}{'□' * (slots - full - part)}]"
+
+
 def get_progress_bar_string(pct):
     try:
         pct = float(str(pct).strip().rstrip("%").strip() or 0)
@@ -278,24 +297,40 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             ),
         )
 
+        msg += BotTheme("USER", User=task.listener.user.mention(style="html"))
+        msg += BotTheme("ID", Id=task.listener.user_id)
+
         if (
             tstatus not in [MirrorStatus.STATUS_SEED, MirrorStatus.STATUS_QUEUEUP]
             and task.listener.progress
         ):
             progress = task.progress()
             msg += BotTheme(
-                "BAR", Bar=f"{get_progress_bar_string(progress)} {progress}"
+                "BAR", Bar=f"{get_status_bar_string(progress)} {progress}"
             )
             msg += BotTheme(
                 "PROCESSED",
                 Processed=f"{task.processed_bytes()} of {task.size()}",
             )
-            msg += BotTheme("STATUS", Status=tstatus, Url=msg_link)
-            msg += BotTheme("ETA", Eta=task.eta())
+            msg += _status_line(tstatus, msg_link)
             msg += BotTheme("SPEED", Speed=task.speed())
-            msg += BotTheme("ELAPSED", Elapsed=get_readable_time(elapsed))
+            eta_str = str(task.eta())
+            try:
+                total_str = get_readable_time(elapsed + get_raw_time(eta_str))
+            except Exception:
+                total_str = "~"
+            msg += BotTheme(
+                "TIME_OF",
+                Elapsed=get_readable_time(elapsed),
+                Total=total_str,
+                Eta=eta_str,
+            )
             msg += BotTheme("ENGINE", Engine=task.engine)
-            msg += BotTheme("STA_MODE", Mode=f"{task.listener.mode[0]} - {task.listener.mode[1]}")
+            msg += BotTheme(
+                "STA_MODE",
+                InMode=task.listener.mode[0],
+                OutMode=task.listener.mode[1],
+            )
             if task.engine.startswith("qBit") and hasattr(task, "seeders_num"):
                 try:
                     msg += BotTheme("SEEDERS", Seeders=task.seeders_num())
@@ -303,7 +338,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
                 except Exception:
                     pass
         elif tstatus == MirrorStatus.STATUS_SEED:
-            msg += BotTheme("STATUS", Status=tstatus, Url=msg_link)
+            msg += _status_line(tstatus, msg_link)
             msg += BotTheme("SEED_SIZE", Size=task.size())
             msg += BotTheme("SEED_SPEED", Speed=task.seed_speed())
             msg += BotTheme("UPLOADED", Upload=task.uploaded_bytes())
@@ -311,12 +346,10 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             msg += BotTheme("TIME", Time=task.seeding_time())
             msg += BotTheme("SEED_ENGINE", Engine=task.engine)
         else:
-            msg += BotTheme("STATUS", Status=tstatus, Url=msg_link)
+            msg += _status_line(tstatus, msg_link)
             msg += BotTheme("STATUS_SIZE", Size=task.size())
             msg += BotTheme("NON_ENGINE", Engine=task.engine)
 
-        msg += BotTheme("USER", User=task.listener.user.mention(style="html"))
-        msg += BotTheme("ID", Id=task.listener.user_id)
         if task.engine.startswith("qBit"):
             msg += BotTheme(
                 "BTSEL", Btsel=f"/{BotCommands.SelectCommand[1]}_{task.gid()}"
@@ -377,7 +410,8 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
 
     msg += BotTheme("FOOTER")
     buttons = ButtonMaker()
-    buttons.data_button(BotTheme("REFRESH", Page=f"{page_no}/{pages}"), f"status {sid} ref")
+    buttons.data_button(BotTheme("TSTATS_BT"), f"status {sid} ov")
+    buttons.data_button(BotTheme("REFRESH_BT"), f"status {sid} ref")
 
     if len(tasks) > STATUS_LIMIT:
         if Config.BOT_MAX_TASKS:
@@ -391,6 +425,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             msg += BotTheme("TASKS", Tasks=tasks_no)
 
         buttons = ButtonMaker()
+        buttons.data_button(BotTheme("TSTATS_BT"), f"status {sid} ov", "footer")
         buttons.data_button(BotTheme("PREVIOUS"), f"status {sid} pre")
         buttons.data_button(
             BotTheme("REFRESH", Page=f"{page_no}/{pages}"), f"status {sid} ref"
