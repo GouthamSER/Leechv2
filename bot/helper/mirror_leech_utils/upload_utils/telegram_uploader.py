@@ -1,6 +1,6 @@
 # This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
 
-from asyncio import sleep
+from asyncio import sleep, TimeoutError as AsyncTimeoutError
 from logging import getLogger
 from os import path as ospath, walk
 from re import match as re_match, sub as re_sub
@@ -639,6 +639,19 @@ class TelegramUploader:
                 self._check_cancelled()
                 LOGGER.warning(str(f))
                 await sleep(getattr(f, "value", 5) + 1)
+                self._check_cancelled()
+                self._processed_bytes = base_processed
+            except (ConnectionError, TimeoutError, AsyncTimeoutError, OSError) as e:
+                # e.g. "Session is stopped" / "Request timed out" during save_file.
+                # A retry builds a fresh upload session, so the file can resume.
+                if attempt == 2:
+                    raise
+                self._check_cancelled()
+                LOGGER.warning(
+                    f"Upload connection error ({type(e).__name__}: {e}). "
+                    f"Retrying {attempt + 1}/2 in {10 * (attempt + 1)}s"
+                )
+                await sleep(10 * (attempt + 1))
                 self._check_cancelled()
                 self._processed_bytes = base_processed
 
