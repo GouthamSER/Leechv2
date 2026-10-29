@@ -1,5 +1,3 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
-
 from asyncio import sleep, TimeoutError as AsyncTimeoutError
 from logging import getLogger
 from os import path as ospath, walk
@@ -221,7 +219,10 @@ class TelegramUploader:
                         filtered_lines.append(line)
                 template_to_format = '\n'.join(filtered_lines)
 
-            if is_video:
+            if is_video and any(
+                ph in template_to_format
+                for ph in ("{duration}", "{quality}", "{languages}", "{subtitles}")
+            ):
                 dur, qual, lang, subs = await get_media_info(up_path, True)
             else:
                 dur, qual, lang, subs = 0, "", "", ""
@@ -233,7 +234,11 @@ class TelegramUploader:
                 quality=qual,
                 languages=lang,
                 subtitles=subs,
-                md5_hash=await sync_to_async(get_md5_hash, up_path),
+                md5_hash=(
+                    await sync_to_async(get_md5_hash, up_path)
+                    if "{md5_hash}" in template_to_format
+                    else ""
+                ),
                 mime_type=self._listener.file_details.get("mime_type", "text/plain"),
                 prefilename=self._listener.file_details.get("filename", ""),
                 precaption=self._listener.file_details.get("caption", ""),
