@@ -1,5 +1,3 @@
-# This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
-
 from aiofiles.os import remove, path as aiopath
 from aiofiles import open as aiopen
 from asyncio import sleep, TimeoutError
@@ -47,12 +45,39 @@ def _get_hash_magnet(mgt: str):
     return hash_
 
 
+def _bdecode_end(data: bytes, i: int = 0) -> int:
+    """Return index just after the bencoded value starting at data[i]."""
+    c = data[i : i + 1]
+    if c == b"i":
+        return data.index(b"e", i) + 1
+    if c in (b"l", b"d"):
+        i += 1
+        while data[i : i + 1] != b"e":
+            i = _bdecode_end(data, i)
+        return i + 1
+    colon = data.index(b":", i)
+    return colon + 1 + int(data[i:colon])
+
+
+def _get_hash_torrent(data: bytes):
+    """SHA1 info-hash (v1) of a .torrent file's bytes, or None."""
+    from hashlib import sha1
+
+    try:
+        key = b"4:info"
+        pos = data.index(key) + len(key)
+        return sha1(data[pos : _bdecode_end(data, pos)]).hexdigest()
+    except Exception:
+        return None
+
+
 async def add_qb_torrent(listener, path, ratio, seed_time):
     if Config.DISABLE_TORRENTS:
         await listener.on_download_error("Torrents are disabled in the configuration.")
         return
 
     downloaded_torrent = None
+    torrent_hash = None
     try:
         form = AddFormBuilder.with_client(TorrentManager.qbittorrent)
 
@@ -60,6 +85,7 @@ async def add_qb_torrent(listener, path, ratio, seed_time):
             async with aiopen(listener.link, "rb") as f:
                 data = await f.read()
                 form = form.include_file(data)
+                torrent_hash = _get_hash_torrent(data)
             downloaded_torrent = listener.link
         elif listener.link.lower().startswith("magnet:"):
             form = form.include_url(listener.link)
@@ -91,9 +117,13 @@ async def add_qb_torrent(listener, path, ratio, seed_time):
             await TorrentManager.qbittorrent.torrents.add(form.build())
         except (ClientError, TimeoutError, Exception, AQError) as e:
             zombie_found = False
-            if listener.link.startswith("magnet:"):
+            if listener.link.startswith("magnet:") or torrent_hash:
                 try:
-                    hash_ = _get_hash_magnet(listener.link)
+                    hash_ = (
+                        _get_hash_magnet(listener.link)
+                        if listener.link.startswith("magnet:")
+                        else torrent_hash
+                    )
                     tor_info_list = await TorrentManager.qbittorrent.torrents.info(
                         hashes=[hash_]
                     )
