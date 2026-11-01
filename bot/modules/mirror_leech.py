@@ -9,6 +9,9 @@ from aiofiles.os import path as aiopath
 from bot.core.config_manager import Config
 from bot.core.tg_client import TgClient
 
+from asyncio import sleep
+from os import makedirs
+
 from bot import DOWNLOAD_DIR, LOGGER, bot_loop, task_dict_lock
 from bot.helper.ext_utils.bot_utils import (
     COMMAND_USAGE,
@@ -394,7 +397,27 @@ class Mirror(TaskListener):
                 file_.mime_type == "application/x-bittorrent"
                 or file_.file_name.endswith((".torrent", ".dlc"))
             ):
-                self.link = await reply_to.download()
+                self.link = None
+                for _try in range(3):
+                    try:
+                        # downloads dir can vanish (cleanup/restart) -> .temp move fails
+                        await sync_to_async(makedirs, DOWNLOAD_DIR, exist_ok=True)
+                        self.link = await reply_to.download(
+                            file_name=f"{DOWNLOAD_DIR}{self.message.id}_{file_.file_name}"
+                        )
+                        break
+                    except (FileNotFoundError, OSError, ConnectionError, TimeoutError) as e:
+                        LOGGER.warning(f"Torrent file download failed ({_try + 1}/3): {e}")
+                        await sleep(2 * (_try + 1))
+                if not self.link:
+                    await send_message(
+                        self.message,
+                        "Failed to download the torrent file. Please send it again.",
+                    )
+                    await database.remove_shared_task(
+                        self.message.id, TgClient.ID, user_id=self.user_id
+                    )
+                    return
                 file_ = None
 
         if (
