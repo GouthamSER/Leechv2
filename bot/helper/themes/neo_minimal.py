@@ -96,14 +96,9 @@ class NeoStyle:
     BOT_LIMITS = """<blockquote><b><i>BOT LIMITATIONS :</i></b></blockquote>
  • <b>Direct Limit :</b> {DL} GB
  • <b>Torrent Limit :</b> {TL} GB
- • <b>GDrive Limit :</b> {GL} GB
  • <b>YT-DLP Limit :</b> {YL} GB
  • <b>Playlist Limit :</b> {PL}
- • <b>Mega Limit :</b> {ML} GB
- • <b>Clone Limit :</b> {CL} GB
  • <b>Leech Limit :</b> {LL} GB
- • <b>RClone Limit :</b> {RL} GB
- • <b>JDown Limit :</b> {JL} GB
  • <b>Archive Limit :</b> {AL} GB
  • <b>Extract Limit :</b> {EL} GB
  • <b>Threshold Storage :</b> {TS} GB
@@ -139,13 +134,13 @@ class NeoStyle:
 ------------------------------------------\n\n"""
 
     NAME = "<blockquote><b><i>{Name}</i></b></blockquote>\n\n"
-    SIZE = " • <b>Size: </b>{Size}\n"
-    ELAPSE = " • <b>Elapsed: </b>{Time}\n"
-    MODE = " • <b>Mode: </b>{Mode}\n"
+    SIZE = "┌ <b>Task Size:</b> {Size}\n"
+    ELAPSE = "├ <b>Time Taken:</b> {Time}\n"
+    MODE = "├ <b>In Mode:</b> {InMode}\n├ <b>Out Mode:</b> {OutMode}\n"
 
-    L_TOTAL_FILES = " • <b>Total Files: </b>{Files}\n"
-    L_CORRUPTED_FILES = " • <b>Corrupted Files: </b>{Corrupt}\n"
-    L_CC = " • <b>By: </b>{Tag}\n\n"
+    L_TOTAL_FILES = "├ <b>Total Files:</b> {Files}\n"
+    L_CORRUPTED_FILES = "├ <b>Corrupted Files:</b> {Corrupt}\n"
+    L_CC = "└ <b>Task By:</b> {Tag}\n\n"
     PM_BOT_MSG = "✦ <b><i>File(s) have been Sent above</i></b>"
     L_BOT_MSG = "✦ <b><i>File(s) have been Sent to Bot PM (Private)</i></b>"
     L_LL_MSG = "✦ <b><i>File(s) have been Sent. Access via Links...</i></b>\n"
@@ -170,48 +165,50 @@ class NeoStyle:
     MEDIAINFO_LINK = "📃 MediaInfo"
     SCREENSHOTS = "🖼 ScreenShots"
 
-    STATUS_NAME = "<b>{TaskNum}. <i>{Name}</i></b>\n"
+    STATUS_NAME = "{TaskNum}. {Name}"
 
-    USER = "\n<b>Task By</b> {User}"
-    ID = "\n( <code>#ID{Id}</code> )"
+    USER = "\n├ <b>User :</b> {User}"
+    ID = "\n├ <b>ID :</b> {Id}"
 
     BAR = "\n├ {Bar}"
-    PROCESSED = "\n├ <b>Processed</b> → {Processed}"
-    STATUS = '\n├ <b>Status</b> → <a href="{Url}">{Status}</a>'
-    STATUS_PLAIN = "\n├ <b>Status</b> → {Status}"
+    PROCESS = "\n├ <b>Process :</b> {Progress}"
+    PROCESSED = "\n├ <b>Processed :</b> {Processed}"
+    STATUS = '\n├ <b>Status :</b> <a href="{Url}">{Status}...</a>⬘'
+    STATUS_PLAIN = "\n├ <b>Status :</b> <i>{Status}...</i>⬘"
     ETA = ""
-    SPEED = "\n├ <b>Speed</b> → {Speed}"
+    SPEED = "\n├ <b>Speed :</b> {Speed}"
     ELAPSED = ""
-    TIME_OF = "\n├ <b>Time</b> → {Elapsed} of {Total} ( {Eta} )"
-    ENGINE = "\n├ <b>Engine</b> → {Engine}"
-    STA_MODE = "\n├ <b>In Mode</b> → {InMode}\n├ <b>Out Mode</b> → {OutMode}"
-    SEEDERS = "\n├ <b>Seeders</b> → {Seeders} | "
-    LEECHERS = "<b>Leechers</b> → {Leechers}"
+    TIME_OF = "\n├ <b>Time :</b> {Elapsed} of {Total} ( {Eta} )"
+    ENGINE = "\n├ <b>Engine :</b> {Engine}"
+    STA_MODE = "\n├ <b>In Mode :</b> {InMode}\n├ <b>Out Mode :</b> {OutMode}"
+    SEEDERS = "\n├ <b>Seeders :</b> {Seeders} | "
+    LEECHERS = "<b>Leechers :</b> {Leechers}"
 
-    SEED_SIZE = "\n├ <b>Size</b> → {Size}"
-    SEED_SPEED = "\n├ <b>Speed</b> → {Speed} | "
-    UPLOADED = "<b>Uploaded</b> → {Upload}"
-    RATIO = "\n├ <b>Ratio</b> → {Ratio} | "
-    TIME = "<b>Time</b> → {Time}"
-    SEED_ENGINE = "\n├ <b>Engine</b> → {Engine}"
+    SEED_SIZE = "\n├ <b>Size :</b> {Size}"
+    SEED_SPEED = "\n├ <b>Speed :</b> {Speed} | "
+    UPLOADED = "<b>Uploaded :</b> {Upload}"
+    RATIO = "\n├ <b>Ratio :</b> {Ratio} | "
+    TIME = "<b>Time :</b> {Time}"
+    SEED_ENGINE = "\n├ <b>Engine :</b> {Engine}"
 
-    STATUS_SIZE = "\n├ <b>Size</b> → {Size}"
-    NON_ENGINE = "\n├ <b>Engine</b> → {Engine}"
+    STATUS_SIZE = "\n├ <b>Size :</b> {Size}"
+    NON_ENGINE = "\n├ <b>Engine :</b> {Engine}"
 
-    BTSEL = "\n├ <b>Select</b> → {Btsel}"
-    CANCEL = "\n└ <b>Stop</b> → {Cancel}\n\n"
+    BTSEL = "\n├ <b>Select :</b> {Btsel}"
+    CANCEL = "\n└ <b>Stop :</b> {Cancel}\n\n"
 
-    FOOTER = "<b><u>⌬ Bot Stats</u></b>\n"
-    TASKS = "├ <b>Tasks</b> → {Tasks}\n"
-    BOT_TASKS = "├ <b>Tasks</b> → {Tasks}/{Ttask} | <b>AVL</b> → {Free}\n"
-    Cpu = "├ <b>CPU</b> → {cpu}% | "
-    FREE = "<b>F</b> → {free} [{free_p}%]"
-    Ram = "\n└ <b>RAM</b> → {ram}% | "
-    uptime = "<b>UP</b> → {uptime}"
-    DL = ""
-    UL = ""
-    TSTATS_BT = "📜 TStats"
-    REFRESH_BT = "♻️ Refresh"
+    FOOTER = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+    TASKS = "<b>TASKS:</b> {Tasks}\n"
+    BOT_TASKS = "<b>TASKS:</b> {Tasks}/{Ttask} | <b>AVL:</b> {Free}\n"
+    Cpu = "<b>CPU:</b> {cpu}% | "
+    Ram = "<b>RAM:</b> {ram}% | "
+    FREE = "<b>FREE:</b> {free}\n"
+    NETIO = "<b>IN:</b> {net_in} | <b>OUT:</b> {net_out}\n"
+    DL = "<b>DL:</b> {DL}/s | "
+    UL = "<b>UL:</b> {UL}/s | "
+    uptime = "<b>UP:</b> {uptime}"
+    TSTATS_BT = "☰"
+    REFRESH_BT = "♻️"
 
     PREVIOUS = "❮❮"
     REFRESH = "♻️ {Page}"
