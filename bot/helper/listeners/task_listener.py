@@ -623,15 +623,16 @@ class TaskListener(TaskConfig):
             and Config.DATABASE_URL
         ):
             await database.rm_complete_task(self.message.link)
-        msg = BotTheme("NAME", Name=escape(self.name))
-        msg += BotTheme("SIZE", Size=get_readable_file_size(self.size))
+        msg = BotTheme("SIZE", Size=get_readable_file_size(self.size))
         try:
             elapsed = time() - self.message.date.timestamp()
         except AttributeError:
             elapsed = 0
         msg += BotTheme("ELAPSE", Time=get_readable_time(elapsed))
-        mode_str = f"{self.mode[0]} - {self.mode[1]}" if len(self.mode) >= 2 else "N/A"
-        msg += BotTheme("MODE", Mode=mode_str)
+        in_mode, out_mode = (
+            (self.mode[0], self.mode[1]) if len(self.mode) >= 2 else ("N/A", "N/A")
+        )
+        msg += BotTheme("MODE", InMode=in_mode, OutMode=out_mode)
         LOGGER.info(f"Task Done: {self.name}")
         if self.is_leech:
             msg += BotTheme("L_TOTAL_FILES", Files=folders)
@@ -640,32 +641,32 @@ class TaskListener(TaskConfig):
             msg += BotTheme("L_CC", Tag=self.tag)
 
             if not files and not self.is_super_chat:
-                await send_message(self.message, msg)
+                await send_message(
+                    self.message, f"<b>{escape(self.name)}</b>\n\n" + msg
+                )
             else:
-                msg += "✦ <b><u>Files List :</u></b>\n"
+                pm_note = (
+                    "<i>File(s) have been Sent to Bot PM (Private)</i>\n\n"
+                    if self.bot_pm
+                    else ""
+                )
+
+                async def _deliver(text):
+                    if not (self.bot_pm and self.is_super_chat):
+                        await send_message(self.user_id, text)
+                    if self.is_super_chat:
+                        await send_message(self.message, pm_note + text)
+
                 fmsg = ""
-                for index, (link, name) in enumerate(files.items(), start=1):
-                    chat_id, msg_id = link.split("/")[-2:]
-                    fmsg += f"{index}. <a href='{link}'>{name}</a>"
-                    fmsg += "\n"
-                    if len(fmsg.encode() + msg.encode()) > 4000:
-                        if not (self.bot_pm and self.is_super_chat):
-                            await send_message(self.user_id, msg + fmsg)
-                        if self.is_super_chat:
-                            group_msg = msg + fmsg
-                            if self.bot_pm:
-                                group_msg = group_msg.replace("✦ <b><u>Files List :</u></b>\n", "✦ <b><u>Action Performed :</u></b>\n➜ <i>File(s) have been Sent to Bot PM (Private)</i>\n\n✦ <b><u>Files List :</u></b>\n")
-                            await send_message(self.message, group_msg)
+                multi = len(files) > 1
+                for index, (flink, fname) in enumerate(files.items(), start=1):
+                    prefix = f"{index}. " if multi else ""
+                    fmsg += f"{prefix}<a href='{flink}'>{escape(fname)}</a>\n"
+                    if len(fmsg.encode() + msg.encode()) > 3800:
+                        await _deliver(fmsg)
                         await sleep(1)
                         fmsg = ""
-                if fmsg != "":
-                    if not (self.bot_pm and self.is_super_chat):
-                        await send_message(self.user_id, msg + fmsg)
-                    if self.is_super_chat:
-                        group_msg = msg + fmsg
-                        if self.bot_pm:
-                            group_msg = group_msg.replace("✦ <b><u>Files List :</u></b>\n", "✦ <b><u>Action Performed :</u></b>\n➜ <i>File(s) have been Sent to Bot PM (Private)</i>\n\n✦ <b><u>Files List :</u></b>\n")
-                        await send_message(self.message, group_msg)
+                await _deliver(fmsg + "\n" + msg)
         else:
             msg += BotTheme("M_TYPE", Mimetype=mime_type)
             if mime_type == "Folder":
