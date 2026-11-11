@@ -217,19 +217,19 @@ async def status_pages(_, query):
                 case _:
                     tasks["Download"] += 1
 
-        msg = f"""<blockquote><b><i>Tasks Overview</i></b></blockquote>
+        msg = f"""<blockquote><b>☰ Tasks Overview :</b></blockquote>
 
- • <b>Download:</b> {tasks["Download"]} | <b>Upload:</b> {tasks["Upload"]}
- • <b>Seed:</b> {tasks["Seed"]} | <b>Archive:</b> {tasks["Archive"]}
- • <b>Extract:</b> {tasks["Extract"]} | <b>Split:</b> {tasks["Split"]}
- • <b>QueueDL:</b> {tasks["QueueDl"]} | <b>QueueUP:</b> {tasks["QueueUp"]}
- • <b>Clone:</b> {tasks["Clone"]} | <b>CheckUp:</b> {tasks["CheckUp"]}
- • <b>Paused:</b> {tasks["Pause"]} | <b>SamVideo:</b> {tasks["SamVid"]}
- • <b>Convert:</b> {tasks["ConvertMedia"]} | <b>FFmpeg:</b> {tasks["FFmpeg"]}
+┌ <b>Download:</b> {tasks["Download"]} | <b>Upload:</b> {tasks["Upload"]}
+├ <b>Seed:</b> {tasks["Seed"]} | <b>Archive:</b> {tasks["Archive"]}
+├ <b>Extract:</b> {tasks["Extract"]} | <b>Split:</b> {tasks["Split"]}
+├ <b>QueueDL:</b> {tasks["QueueDl"]} | <b>QueueUP:</b> {tasks["QueueUp"]}
+├ <b>Clone:</b> {tasks["Clone"]} | <b>CheckUp:</b> {tasks["CheckUp"]}
+├ <b>Paused:</b> {tasks["Pause"]} | <b>SamVideo:</b> {tasks["SamVid"]}
+└ <b>Convert:</b> {tasks["ConvertMedia"]} | <b>FFmpeg:</b> {tasks["FFmpeg"]}
 
- • <b>Total Download Speed:</b> {get_readable_file_size(dl_speed)}/s
- • <b>Total Upload Speed:</b> {get_readable_file_size(up_speed)}/s
- • <b>Total Seeding Speed:</b> {get_readable_file_size(seed_speed)}/s
+┌ <b>Total Download Speed:</b> {get_readable_file_size(dl_speed)}/s
+├ <b>Total Upload Speed:</b> {get_readable_file_size(up_speed)}/s
+└ <b>Total Seeding Speed:</b> {get_readable_file_size(seed_speed)}/s
 """
         button = ButtonMaker()
         button.data_button("Back", f"status {data[1]} ref")
