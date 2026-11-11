@@ -5,7 +5,7 @@ from html import escape
 from re import findall
 from time import time
 
-from psutil import cpu_percent, disk_usage, virtual_memory
+from psutil import cpu_percent, disk_usage, net_io_counters, virtual_memory
 from pyrogram import __version__ as pyrover
 from bot import (
     DOWNLOAD_DIR,
@@ -50,7 +50,7 @@ class EngineStatus:
         self.STATUS_AIOHTTP = f"AioHttp v{ver.get('aiohttp', 'N/A')}"
         self.STATUS_GDAPI = f"Google-API v{ver.get('gapi', 'N/A')}"
         self.STATUS_QBIT = f"qBit v{ver.get('qBittorrent', 'N/A')}"
-        self.STATUS_TGRAM = f"WzPyro v{pyrover}"
+        self.STATUS_TGRAM = f"Pyro v{pyrover}"
         self.STATUS_MEGA = f"MegaSDK v{ver.get('mega', '8.1.1')}"
         self.STATUS_TERABOX = f"teraboxSDK v{ver.get('terabox', '1.0.0')}"
         self.STATUS_YTDLP = f"yt-dlp v{ver.get('yt-dlp', 'N/A')}"
@@ -58,8 +58,8 @@ class EngineStatus:
         self.STATUS_7Z = f"7z v{ver.get('7z', 'N/A')}"
         self.STATUS_RCLONE = f"RClone v{ver.get('rclone', 'N/A')}"
         self.STATUS_QUEUE = "QSystem v2"
-        self.STATUS_JD = "JDownloader v2"
         self.STATUS_YT = "Youtube-Api"
+        self.STATUS_JD = "JDownloader v2"
         self.STATUS_METADATA = "Metadata"
         self.STATUS_UPHOSTER = "Uphoster"
 
@@ -287,7 +287,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             else ""
         )
 
-        msg += BotTheme(
+        head = BotTheme(
             "STATUS_NAME",
             TaskNum=index + start_position,
             Name=(
@@ -297,66 +297,67 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             ),
         )
 
-        msg += BotTheme("USER", User=task.listener.user.mention(style="html"))
-        msg += BotTheme("ID", Id=task.listener.user_id)
+        tm = ""
 
         if (
             tstatus not in [MirrorStatus.STATUS_SEED, MirrorStatus.STATUS_QUEUEUP]
             and task.listener.progress
         ):
             progress = task.progress()
-            msg += BotTheme(
-                "BAR", Bar=f"{get_status_bar_string(progress)} {progress}"
-            )
-            msg += BotTheme(
+            tm += BotTheme("BAR", Bar=get_progress_bar_string(progress))
+            tm += BotTheme("PROCESS", Progress=progress)
+            tm += BotTheme(
                 "PROCESSED",
                 Processed=f"{task.processed_bytes()} of {task.size()}",
             )
-            msg += _status_line(tstatus, msg_link)
-            msg += BotTheme("SPEED", Speed=task.speed())
+            tm += _status_line(tstatus, msg_link)
+            tm += BotTheme("SPEED", Speed=task.speed())
             eta_str = str(task.eta())
             try:
                 total_str = get_readable_time(elapsed + get_raw_time(eta_str))
             except Exception:
                 total_str = "~"
-            msg += BotTheme(
+            tm += BotTheme(
                 "TIME_OF",
                 Elapsed=get_readable_time(elapsed),
                 Total=total_str,
                 Eta=eta_str,
             )
-            msg += BotTheme("ENGINE", Engine=task.engine)
-            msg += BotTheme(
+            tm += BotTheme("ENGINE", Engine=task.engine)
+            tm += BotTheme(
                 "STA_MODE",
                 InMode=task.listener.mode[0],
                 OutMode=task.listener.mode[1],
             )
             if task.engine.startswith("qBit") and hasattr(task, "seeders_num"):
                 try:
-                    msg += BotTheme("SEEDERS", Seeders=task.seeders_num())
-                    msg += BotTheme("LEECHERS", Leechers=task.leechers_num())
+                    tm += BotTheme("SEEDERS", Seeders=task.seeders_num())
+                    tm += BotTheme("LEECHERS", Leechers=task.leechers_num())
                 except Exception:
                     pass
         elif tstatus == MirrorStatus.STATUS_SEED:
-            msg += _status_line(tstatus, msg_link)
-            msg += BotTheme("SEED_SIZE", Size=task.size())
-            msg += BotTheme("SEED_SPEED", Speed=task.seed_speed())
-            msg += BotTheme("UPLOADED", Upload=task.uploaded_bytes())
-            msg += BotTheme("RATIO", Ratio=task.ratio())
-            msg += BotTheme("TIME", Time=task.seeding_time())
-            msg += BotTheme("SEED_ENGINE", Engine=task.engine)
+            tm += _status_line(tstatus, msg_link)
+            tm += BotTheme("SEED_SIZE", Size=task.size())
+            tm += BotTheme("SEED_SPEED", Speed=task.seed_speed())
+            tm += BotTheme("UPLOADED", Upload=task.uploaded_bytes())
+            tm += BotTheme("RATIO", Ratio=task.ratio())
+            tm += BotTheme("TIME", Time=task.seeding_time())
+            tm += BotTheme("SEED_ENGINE", Engine=task.engine)
         else:
-            msg += _status_line(tstatus, msg_link)
-            msg += BotTheme("STATUS_SIZE", Size=task.size())
-            msg += BotTheme("NON_ENGINE", Engine=task.engine)
+            tm += _status_line(tstatus, msg_link)
+            tm += BotTheme("STATUS_SIZE", Size=task.size())
+            tm += BotTheme("NON_ENGINE", Engine=task.engine)
 
+        tm += BotTheme("USER", User=task.listener.user.mention(style="html"))
+        tm += BotTheme("ID", Id=task.listener.user_id)
         if task.engine.startswith("qBit"):
-            msg += BotTheme(
+            tm += BotTheme(
                 "BTSEL", Btsel=f"/{BotCommands.SelectCommand[1]}_{task.gid()}"
             )
-        msg += BotTheme(
+        tm += BotTheme(
             "CANCEL", Cancel=f"/{BotCommands.CancelTaskCommand[1]}_{task.gid()}"
         )
+        msg += head + tm.replace("\n├", "\n┌", 1)
 
     if len(msg) == 0:
         if status == "All":
@@ -432,15 +433,17 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
         )
         buttons.data_button(BotTheme("NEXT"), f"status {sid} nex")
 
-    button = buttons.build_menu(3)
+    button = buttons.build_menu(2 if len(tasks) <= STATUS_LIMIT else 3)
+    net = net_io_counters()
     msg += BotTheme("Cpu", cpu=cpu_percent())
-    msg += BotTheme(
-        "FREE",
-        free=get_readable_file_size(disk_usage(DOWNLOAD_DIR).free),
-        free_p=round(100 - disk_usage(DOWNLOAD_DIR).percent, 1),
-    )
     msg += BotTheme("Ram", ram=virtual_memory().percent)
-    msg += BotTheme("uptime", uptime=get_readable_time(time() - bot_start_time))
+    msg += BotTheme("FREE", free=get_readable_file_size(disk_usage(DOWNLOAD_DIR).free))
+    msg += BotTheme(
+        "NETIO",
+        net_in=get_readable_file_size(net.bytes_recv),
+        net_out=get_readable_file_size(net.bytes_sent),
+    )
     msg += BotTheme("DL", DL=get_readable_file_size(dl_speed))
     msg += BotTheme("UL", UL=get_readable_file_size(up_speed))
+    msg += BotTheme("uptime", uptime=get_readable_time(time() - bot_start_time))
     return msg, button
